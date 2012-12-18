@@ -1,0 +1,12 @@
+# dot-gitignore
+
+# Library files.
+node_modules/
+
+# Compiled files.
+*.js
+
+# Backup files.
+*~
+
+# end-of-gitignore
