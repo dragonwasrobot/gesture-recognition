@@ -1,65 +1,28 @@
 # **Author:** Peter Urbak<br/>
-# **Version:** 2013-01-28
+# **Version:** 2013-01-29
 
-# ## Classes
-
-# The `GestureInterpreter` registers gestures and callback functions on the
-# `TUIOInterpreter` and then dispatches on the received gesture updates from the
-# `TUIOInterpreter`.
-class GestureInterpreter
-
-	# ### Constructors
-
-	# Constructs a `GestureInterpreter`.
-	#
-	# - **table:** The `TableModel` to be manipulated.
-	# - **tuioInterpreter:** The `TUIOInterpreter` to infer the gestures.
-	constructor: (@table, @tuioInterpreter) ->
-		@setupInterpreter()
-
-	# ### Methods
-
-	# Sets up the `GestureInterpreter` by registering callback functions on the
-	# tuioInterpreter.
-	setupInterpreter: () ->
-		@tuioInterpreter.fingerTap @handleFingerTap
-		@tuioInterpreter.fingerDoubleTap @handleFingerDoubleTap
-		@tuioInterpreter.fingerHoldPlusTap @handleFingerHoldPlusTap
-		@tuioInterpreter.objectShake @handleObjectShake
-
-	# #### Finger Gestures
-
-	handleFingerTap: (gesture) ->
-		log "handleFingerTap"
-
-	handleFingerDoubleTap: (gesture) ->
-		log "handleFingerDoubleTap"
-
-	handleFingerHoldPlusTap: (gesture) ->
-		log "handleFingerHoldPlusTap"
-
-	# #### Object Gestures
-
-	handleObjectShake: (gesture) ->
-		log "handleObjectShake"
-
+# The `TUIOInterpreter` receives raw JSON updates from the TUIO plugin and use
+# these to update the basic properties of the `ObjectModel`s present on the
+# table. Furthermore, it also infers higher level gestures from the cursor and
+# object movement and propagates these as gesture objects to the upper layers of
+# the application.
 class TUIOInterpreter
 
 	# ### Constants
 
-	# **Tap Constants**
+	# ##### Tap Constants
 	TAP_MIN_LENGTH: 0
 	TAP_MAX_LENGTH: 0.02
 	TAP_MIN_TIME: 0
 	TAP_MAX_TIME: 100
 
-	# **Double Tap Constants**
+	# ##### Double Tap Constants
 	DOUBLE_TAP_MIN_LENGTH: 0
 	DOUBLE_TAP_MAX_LENGTH: 0.04
 	DOUBLE_TAP_MIN_TIME: 0
 	DOUBLE_TAP_MAX_TIME: 200
 
-	# **Flick Constants**
+	# ##### Flick Constants
 	FLICK_MIN_LENGTH: 0.025
 	FLICK_MAX_LENGTH: 0.15
 	FLICK_MIN_TIME: 100
@@ -67,18 +30,18 @@ class TUIOInterpreter
 	FLICK_MIN_DEGREE: 0
 	FLICK_MAX_DEGREE: 45
 
-	# **Pressed + Flick Constants**
+	# ##### Pressed + Flick Constants
 	PRESSED_MIN_LENGTH: 0
 	PRESSED_MAX_LENGTH: 0.10
 
-	# **Shake Constants**
+	# ##### Shake Constants
 	SHAKE_MIN_LENGTH: 0.05
 	SHAKE_MAX_LENGTH: 0.20
 	SHAKE_MIN_TIME: 250
 	SHAKE_MAX_TIME: 2000 # Probably too large
 	SHAKE_MAX_DEGREE: 60
 
-	# **Other Constants**
+	# ##### Other Constants
 	SPLICE_MAX_LENGTH: 0.025
 	OBJECT_UPDATE_FREQUENCY: 100
 	OBJECT_RELEVANCE_MAX_TIME: 2500
@@ -91,40 +54,39 @@ class TUIOInterpreter
 	# ### Constructors
 
 	# Constructs a `TUIOInterpreter`.
+	#
+	# - **table:** The `TableModel` object.
 	constructor: (@table) ->
 		@objectUpdates = {} # { sid, [ ObjectUpdate ] }
 		@cursorRecentTaps = [] # [ Cursor ]
 		@cursorCurrentPresses = {} # { sid : Cursor }
-		@setupTUIO()
+		@registerCallbacks()
 
 	# ### Methods
 
-	setupTUIO: () ->
+	# Registers the callback function on the TUIO plugin.
+	registerCallbacks: () ->
+		tuio.object_add(@addTuioObject)
+		tuio.object_update(@updateTuioObject)
+		tuio.object_remove(@removeTuioObject)
 
-		tuio.object_add (object) =>
-			@addTuioObject(object)
-
-		tuio.object_update (object) =>
-			@updateTuioObject(object)
-
-		tuio.object_remove (object) =>
-			@removeTuioObject(object)
-
-		tuio.cursor_add (cursor) =>
-			@addTuioCursor(cursor)
-
-		tuio.cursor_update (cursor) =>
-			@updateTuioCursor(cursor)
-
-		tuio.cursor_remove (cursor) =>
-			@removeTuioCursor(cursor)
+		tuio.cursor_add(@addTuioCursor)
+		tuio.cursor_update(@updateTuioCursor)
+		tuio.cursor_remove(@removeTuioCursor)
 
 	# #### Callbacks
 
-	callbackFingerTap: (f) -> # stub
-	callbackFingerDoubleTap: (f) -> # stub
-	callbackFingerHoldPlusTap: (f) -> # stub
-	callbackObjectShake: (f) -> # stub
+	# The `TUIOInterpreter` allows adding callback functions for handling
+	# four gestures:
+	#
+	# - Finger: tap
+	# - Finger: double tap
+	# - Finger: hold + tap
+	# - Object: shake
+	callbackFingerTap: (gesture) -> # stub
+	callbackFingerDoubleTap: (gesture) -> # stub
+	callbackFingerHoldPlusTap: (gesture) -> # stub
+	callbackObjectShake: (gesture) -> # stub
 
 	fingerTap : (f) -> @callbackFingerTap = f
 	fingerDoubleTap : (f) -> @callbackFingerDoubleTap = f
@@ -135,6 +97,9 @@ class TUIOInterpreter
 
 	# ##### Objects
 
+	# Adds a new object.
+	#
+	# - **object:** The object to be added.
 	addTuioObject: (object) ->
 		if not @table.isObjectModelOnScreen(object.sid)?
 			objectTimestamp = new Date().getTime()
@@ -142,6 +107,9 @@ class TUIOInterpreter
 			@objectUpdates[object.sid].push(new ObjectUpdate(objectTimestamp,
 				new	Position(object.x, object.y)))
 
+	# Updates an object.
+	#
+	# - **object:** The object to be updated.
 	updateTuioObject: (object) ->
 		objectTimestamp = new Date().getTime()
 		modelObject = @table.getObjectModel(object.sid)
@@ -177,20 +145,32 @@ class TUIOInterpreter
 						log "Shake Detected!"
 						@foldUnfoldObject(object)
 
+	# Removes an object
+	#
+	# - **object:** The object to be removed.
 	removeTuioObject: (object) ->
 		delete @objectUpdates[object.sid]
 		@table.removeObjectModel(object)
 
 	# ##### Cursors
 
+	# Adds a new cursor.
+	#
+	# - **cursor:** The cursor to be added.
 	addTuioCursor: (cursor) ->
 		timestampStart = new Date().getTime()
 		positionStart = new Position(cursor.x, cursor.y)
 		@cursorCurrentPresses[cursor.sid] =
 			new Cursor(timestampStart, null, positionStart, null)
 
+	# Update a cursor.
+	#
+	# - **cursor:** The cursor to be updated.
 	updateTuioCursor: (cursor) -> # do nothing
 
+	# Removes a cursor.
+	#
+	# - **cursor:** The cursor to be removed.
 	removeTuioCursor: (cursor) ->
 		timestampStop	= new Date().getTime()
 		positionStop = new Position(cursor.x, cursor.y)
@@ -251,6 +231,11 @@ class TUIOInterpreter
 	# #### Gesture Recognition
 
 	# ##### Shake Recognition
+
+	# Check if we can detect a shake gesture.
+	#
+	# - **object:**
+	# - **objectTimestamp:**
 	checkShake: (object, objectTimestamp) ->
 		objectRecentUpdates = @objectUpdates[object.sid]
 
@@ -399,6 +384,9 @@ class TUIOInterpreter
 
 	# ##### Single Tap Recognition
 
+	# Check if we can detect a single tap
+	#
+	# - **cursorObj:**
 	checkSingleTap: (cursorObj) ->
 		log "checkSingleTap"
 		# log cursorObj.timestampStart
@@ -416,6 +404,9 @@ class TUIOInterpreter
 
 	# ##### Double Tap Recognition
 
+	# Check if we can detect a double tap
+	#
+	# - **cursorObj:**
 	checkDoubleTap: (cursorObj) ->
 		log "checkDoubleTap"
 		for cursor in @_cursorRecentTaps
@@ -432,6 +423,9 @@ class TUIOInterpreter
 
 	# ##### Pressed + Flick Recognition
 
+	# Returns the nearest neighbor cursor
+	#
+	# - **position:**
 	getNearestNeighborCursor: (position) ->
 			log "getNearestNeighborCursor"
 			# Naive Linear Search
@@ -453,6 +447,9 @@ class TUIOInterpreter
 
 	# ##### Flick Recognition
 
+	# Check if we can detect a flick.
+	#
+	# - **cursorObj:**
 	checkFlick: (cursorObj) ->
 		log "checkFlick"
 		# Calculate the angle of the flick gesture.
@@ -471,6 +468,9 @@ class TUIOInterpreter
 		else
 			return false
 
+	# Returns the nearest neighbor object
+	#
+	# - **position:**
 	getNearestNeighborObject: (position) ->
 			log "getNearestNeighborObject"
 			# Naive Linear Search
@@ -490,113 +490,3 @@ class TUIOInterpreter
 				return nearestNeighborObj
 			else
 				return null
-
-	# #### Object Manipulation
-
-	selectDeselectObject: (object) ->
-		log "selectDeselectObject"
-		modelObject = @models[object.sid]
-		if modelObject.selected is false
-			@selectObject(object)
-		else
-			@deselectObject(object)
-
-	selectObject: (object) ->
-		log "selectObject"
-		modelObject = @models[object.sid]
-		if modelObject.selected is false
-			modelObject.changeColor(@SELECTED_COLOR)
-			modelObject.selected = true
-			@objectsSelected[object.sid] = object
-
-	deselectObject: (object) ->
-		log "deselectObject"
-		modelObject = @models[object.sid]
-		if modelObject.selected is true
-			if modelObject.unfolded is true
-				modelObject.changeColor(@UNFOLDED_COLOR)
-			else
-				modelObject.changeColor(@FOLDED_COLOR)
-			modelObject.selected = false
-			delete @objectsSelected[object.sid]
-
-	foldUnfoldObject: (object) ->
-		log "foldUnfoldObject"
-		modelObject = @_models[object.sid]
-		if modelObject.unfolded is false
-			@unfoldObject(object)
-		else
-			@foldObject(object)
-
-	unfoldObject: (object) ->
-		log "unfoldObject"
-		modelObject = @models[object.sid]
-		modelObject.changeColor(@UNFOLDED_COLOR)
-		modelObject.unfolded = true
-
-	foldObject: (object) ->
-		log "hideObjectStats"
-		modelObject = @models[object.sid]
-		modelObject.changeColor(@FOLDED_COLOR)
-		modelObject.unfolded = false
-
-# ## Functions
-
-first = (arr) -> arr[0]
-last = (arr) -> arr[(arr.length)-1]
-
-log = (string) -> console.log string
-
-map = (list, func) -> func(x) for x in list
-
-filter = (list, func) -> x for x in list when func(x)
-
-objectLength = (obj) ->
-	length = 0
-	for key, value of obj
-		length += 1
-	return length
-
-# ### Initialization
-#
-# Sets up the gesture recognition installation by initializing the
-# three main components: `TableModel`, `GestureInterpreter`, and
-#`TUIOInterpreter` along with a range of minor convenience classes.
-root = exports ? window
-
-$(document).ready () ->
-
-	root.surface = $('#surface')
-
-	# Wait a bit and load stuff
-	setTimeout () =>
-		# The `table` is our main data model while the `tuioInterpreter` is in
-		# charge of inferring gestures from low-level sensor data and update the
-		# data model according to object and cursor movement. Lastly, the
-		# `gestureInterpreter` dispatches on gesture updates received from the
-		# `tuioInterpreter` and manipulates the state of objects found in the data
-		# model.
-		stylesheet = {
-			objectSelectedColor : {
-				red : 100,
-				green : 45,
-				blue : 214
-			},
-			objectFoldedColor : {
-				red : 214,
-				green : 135,
-				blue : 45
-			},
-			objectUnfoldedColor : {
-				red : 45,
-				green : 214,
-				blue : 24
-			}
-		}
-
-		table = new Table(root.surface, stylesheet)
-		tuioInterpreter = new TUIOInterpreter(table) # Infers motion and gestures
-		gestureInterpreter = new GestureInterpreter(table, tuioInterpreter) # Manipulates
-		2000
-
-# end-of-flick.coffee

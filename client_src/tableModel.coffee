@@ -5,11 +5,6 @@
 # objects on it.
 class TableModel
 
-	# ### Constants
-	SELECTED_COLOR: "rgba(100,45,214)" # Should be parameterized or similar.
-	FOLDED_COLOR: "rgba(214,135,45)"
-	UNFOLDED_COLOR: "rgb(45,214,24)"
-
 	# ### Constructors
 
 	# Constructs a `TableModel`.
