@@ -3,7 +3,8 @@
 
 # The `TableModel` encapsulates the state of the multi-touch table and the
 # objects on it.
-class TableModel
+
+class App.TableModel
 
 	# ### Constructors
 

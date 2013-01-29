@@ -37,7 +37,7 @@ $(document).ready () ->
 		# `gestureInterpreter` dispatches on gesture updates received from the
 		# `tuioInterpreter` and manipulates the state of objects found in the data
 		# model.
-		table = new Table(root.surface, stylesheet)
-		tuioInterpreter = new TUIOInterpreter(table)
-		gestureInterpreter = new GestureInterpreter(table, tuioInterpreter)
+		table = new App.TableModel(root.surface, stylesheet)
+		tuioInterpreter = new App.TUIOInterpreter(table)
+		gestureInterpreter = new App.GestureInterpreter(table, tuioInterpreter)
 		2000

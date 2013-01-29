@@ -1,9 +1,11 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-01-29
 
+root = exports ? window
+
 # The `CursorModel` encapsulates the state and session of a cursor on the
 # multi-touch table.
-class CursorModel
+class App.CursorModel
 
 	# ### Constructors
 

@@ -6,7 +6,7 @@
 # table. Furthermore, it also infers higher level gestures from the cursor and
 # object movement and propagates these as gesture objects to the upper layers of
 # the application.
-class TUIOInterpreter
+class App.TUIOInterpreter
 
 	# ### Constants
 
@@ -65,14 +65,17 @@ class TUIOInterpreter
 	# ### Methods
 
 	# Registers the callback function on the TUIO plugin.
+	#
+	# Notice that we pass anonymous functions in order to properly bind @ using
+	# the fat arrow =>
 	registerCallbacks: () ->
-		tuio.object_add(@addTuioObject)
-		tuio.object_update(@updateTuioObject)
-		tuio.object_remove(@removeTuioObject)
+		tuio.object_add (object) =>	@addTuioObject(object)
+		tuio.object_update (object) => @updateTuioObject(object)
+		tuio.object_remove (object) => @removeTuioObject(object)
 
-		tuio.cursor_add(@addTuioCursor)
-		tuio.cursor_update(@updateTuioCursor)
-		tuio.cursor_remove(@removeTuioCursor)
+		tuio.cursor_add (object) => @addTuioCursor(cursor)
+		tuio.cursor_update (object) => @updateTuioCursor(cursor)
+		tuio.cursor_remove (object) => @removeTuioCursor(cursor)
 
 	# #### Callbacks
 

@@ -4,7 +4,7 @@
 root = window ? exports
 
 # The `ObjectModel` encapsulates the state of an object on the multi-touch table.
-class ObjectModel
+class App.ObjectModel
 
 	# ### Constructors
 
@@ -76,5 +76,5 @@ class ObjectModel
 
 # The `ObjectUpdate` encapsulates an update of an `ObjectModel` having a
 # timestamp of the update along with a new position.
-class ObjectUpdate
+class App.ObjectUpdate
 	constructor: (@timestamp, @position) ->

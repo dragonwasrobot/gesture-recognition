@@ -4,7 +4,7 @@
 # The `GestureInterpreter` registers gestures and callback functions on the
 # `TUIOInterpreter` and then dispatches on the received gesture updates from the
 # `TUIOInterpreter`.
-class GestureInterpreter
+class App.GestureInterpreter
 
 	# ### Constructors
 
@@ -20,11 +20,11 @@ class GestureInterpreter
 	# Sets up the `GestureInterpreter` by registering callback functions on the
 	# tuioInterpreter.
 	registerCallbacks: () ->
-		@tuioInterpreter.fingerTap(@handleFingerTap)
-		@tuioInterpreter.fingerDoubleTap(@handleFingerDoubleTap)
-		@tuioInterpreter.fingerHoldPlusTap(@handleFingerHoldPlusTap)
+		@tuioInterpreter.fingerTap (tap) => @handleFingerTap(tap)
+		@tuioInterpreter.fingerDoubleTap (tap) => @handleFingerDoubleTap(tap)
+		@tuioInterpreter.fingerHoldPlusTap (tap) => @handleFingerHoldPlusTap(tap)
 
-		@tuioInterpreter.objectShake(@handleObjectShake)
+		@tuioInterpreter.objectShake (shake) => @handleObjectShake(shake)
 
 	# #### Finger Gestures
 
