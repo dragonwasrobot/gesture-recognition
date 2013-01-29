@@ -1,0 +1,42 @@
+/* style.css
+ *
+ * @author Peter Urbak
+ * @version 2012-12-24
+ */
+
+body {
+	 overflow: hidden;
+	 overflow-y: hidden;
+	 font-family: monospace;
+}
+
+#surface {
+	 position: absolute;
+	 left: 0px;
+	 right: 0px;
+	 width: 100%;
+	 height: 100%;
+	 background-color: black;
+	 background: url(../img/grid.gif);
+	 overflow: hidden;
+}
+
+.model {
+	 position: absolute;
+	 width: 172px;
+	 height: 90px; /*63 (106mm) 0.94339622641509*/
+	 color: rgba(253,120,0,0.6);
+	 text-align:center;
+	 vertical-align:text-bottom;
+}
+
+.tuio_object_text {
+	 margin: 0;
+	 padding: 0;
+	 border: 0;
+	 position:absolute;
+	 left: 0%;
+	 width: 100%;
+	 top:70%;
+}
+/* end-of-style.css */

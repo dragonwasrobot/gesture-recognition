@@ -1,122 +1,106 @@
-# flick.coffee
-#
-# Receives TUIO events and infers a range of gestures based on the received
-# event data.
-#
-# @author Peter Urbak
-# @version 2012-12-18
+# **Author:** Peter Urbak<br/>
+# **Version:** 2013-01-28
 
-# Cursor Gestures:
-# - Single Tap
-# - Double Tap
-# - Flick
-# - Press+Flick
+# ## Classes
 
-# Object Gestures:
-# - Shake
+# The `GestureInterpreter` registers gestures and callback functions on the
+# `TUIOInterpreter` and then dispatches on the received gesture updates from the
+# `TUIOInterpreter`.
+class GestureInterpreter
 
-# Conventions:
-# - Constants are prefixed by an underscore and written in all caps.
-# - Fields are prefixed by an underscore and written in CamelCase.
-# - Class methods are prefixed by an underscore and written in CamelCase.
-# - Functions are written in CamelCase.
+	# ### Constructors
 
-# Documentation:
-# The constants specified at the top of the Table class should be adjusted
-# according to the actual table and objects used.
+	# Constructs a `GestureInterpreter`.
+	#
+	# - **table:** The `TableModel` to be manipulated.
+	# - **tuioInterpreter:** The `TUIOInterpreter` to infer the gestures.
+	constructor: (@table, @tuioInterpreter) ->
+		@setupInterpreter()
 
-root = exports ? window
+	# ### Methods
 
-# -*- Classes -*-
+	# Sets up the `GestureInterpreter` by registering callback functions on the
+	# tuioInterpreter.
+	setupInterpreter: () ->
+		@tuioInterpreter.fingerTap @handleFingerTap
+		@tuioInterpreter.fingerDoubleTap @handleFingerDoubleTap
+		@tuioInterpreter.fingerHoldPlusTap @handleFingerHoldPlusTap
+		@tuioInterpreter.objectShake @handleObjectShake
 
-# * Helper Classes *
+	# #### Finger Gestures
 
-class Vector
-	constructor: (@x, @y) ->
+	handleFingerTap: (gesture) ->
+		log "handleFingerTap"
 
-class Position
-	constructor: (@x, @y) ->
+	handleFingerDoubleTap: (gesture) ->
+		log "handleFingerDoubleTap"
 
-class Cursor
-	constructor: (@timestampStart, @timestampStop, \
-		@positionStart, @positionStop) ->
+	handleFingerHoldPlusTap: (gesture) ->
+		log "handleFingerHoldPlusTap"
 
-class ObjectUpdate
-	constructor: (@timestamp, @position) ->
+	# #### Object Gestures
 
-class Direction
-	constructor: (@positionStart, @positionStop, @vector) ->
+	handleObjectShake: (gesture) ->
+		log "handleObjectShake"
 
-# * Main Class *
+class TUIOInterpreter
 
-class Table
+	# ### Constants
 
-	# * Constants *
+	# **Tap Constants**
+	TAP_MIN_LENGTH: 0
+	TAP_MAX_LENGTH: 0.02
+	TAP_MIN_TIME: 0
+	TAP_MAX_TIME: 100
 
-	# Tap Constants
-	_TAP_MIN_LENGTH: 0
-	_TAP_MAX_LENGTH: 0.02
-	_TAP_MIN_TIME: 0
-	_TAP_MAX_TIME: 100
+	# **Double Tap Constants**
+	DOUBLE_TAP_MIN_LENGTH: 0
+	DOUBLE_TAP_MAX_LENGTH: 0.04
+	DOUBLE_TAP_MIN_TIME: 0
+	DOUBLE_TAP_MAX_TIME: 200
 
-	# Double Tap Constants
-	_DOUBLE_TAP_MIN_LENGTH: 0
-	_DOUBLE_TAP_MAX_LENGTH: 0.04
-	_DOUBLE_TAP_MIN_TIME: 0
-	_DOUBLE_TAP_MAX_TIME: 200
+	# **Flick Constants**
+	FLICK_MIN_LENGTH: 0.025
+	FLICK_MAX_LENGTH: 0.15
+	FLICK_MIN_TIME: 100
+	FLICK_MAX_TIME: 750
+	FLICK_MIN_DEGREE: 0
+	FLICK_MAX_DEGREE: 45
 
-	# Flick Constants
-	_FLICK_MIN_LENGTH: 0.025
-	_FLICK_MAX_LENGTH: 0.15
-	_FLICK_MIN_TIME: 100
-	_FLICK_MAX_TIME: 750
-	_FLICK_MIN_DEGREE: 0
-	_FLICK_MAX_DEGREE: 45
+	# **Pressed + Flick Constants**
+	PRESSED_MIN_LENGTH: 0
+	PRESSED_MAX_LENGTH: 0.10
 
-	# Pressed + Flick Constants
-	_PRESSED_MIN_LENGTH: 0
-	_PRESSED_MAX_LENGTH: 0.10
+	# **Shake Constants**
+	SHAKE_MIN_LENGTH: 0.05
+	SHAKE_MAX_LENGTH: 0.20
+	SHAKE_MIN_TIME: 250
+	SHAKE_MAX_TIME: 2000 # Probably too large
+	SHAKE_MAX_DEGREE: 60
 
-	# Shake Constants
-	_SHAKE_MIN_LENGTH: 0.05
-	_SHAKE_MAX_LENGTH: 0.20
-	_SHAKE_MIN_TIME: 250
-	_SHAKE_MAX_TIME: 2000 # Probably too large
-	_SHAKE_MAX_DEGREE: 60
+	# **Other Constants**
+	SPLICE_MAX_LENGTH: 0.025
+	OBJECT_UPDATE_FREQUENCY: 100
+	OBJECT_RELEVANCE_MAX_TIME: 2500
+	CURSOR_RELEVANCE_MAX_TIME: 1000
+	NEAREST_NEIGHBOR_MAX_LENGTH: 0.15
 
-	# Other Constants
-	_SPLICE_MAX_LENGTH: 0.025
-	_OBJECT_UPDATE_FREQUENCY: 100
-	_OBJECT_RELEVANCE_MAX_TIME: 2500
-	_CURSOR_RELEVANCE_MAX_TIME: 1000
-	_NEAREST_NEIGHBOR_MAX_LENGTH: 0.15
+	X_UNIT_VECTOR: { x : 1 , y : 0 }
+	Y_UNIT_VECTOR: { x : 0 , y : 1 }
 
-	_X_UNIT_VECTOR: { x : 1 , y : 0 }
-	_Y_UNIT_VECTOR: { x : 0 , y : 1 }
+	# ### Constructors
 
-	_SELECTED_COLOR: "rgba(100,45,214)"
-	_FOLDED_COLOR: "rgba(214,135,45)"
-	_UNFOLDED_COLOR: "rgb(45,214,24)"
-
-	# * Constructors *
-	constructor: () ->
-
-		# Initialize fields
-		@_models = {} # { sid , CommonObjectModel }
-		@_objectsOnScreen = {} # { sid, CommonObjectModel }
-		@_objectsSelected = {} # { sid, object }
-
-		@_objectUpdates = {} # { sid, [ ObjectUpdate ] }
-
-		@_cursorRecentTaps = [] # [ Cursor ]
-		@_cursorCurrentPresses = {} # { sid : Cursor }
-
-		# Setup TUIO
+	# Constructs a `TUIOInterpreter`.
+	constructor: (@table) ->
+		@objectUpdates = {} # { sid, [ ObjectUpdate ] }
+		@cursorRecentTaps = [] # [ Cursor ]
+		@cursorCurrentPresses = {} # { sid : Cursor }
 		@setupTUIO()
 
-	# * Methods *
+	# ### Methods
 
 	setupTUIO: () ->
+
 		tuio.object_add (object) =>
 			@addTuioObject(object)
 
@@ -135,36 +119,41 @@ class Table
 		tuio.cursor_remove (cursor) =>
 			@removeTuioCursor(cursor)
 
-	# * UI Event Listeners *
+	# #### Callbacks
 
-	# Objects
+	callbackFingerTap: (f) -> # stub
+	callbackFingerDoubleTap: (f) -> # stub
+	callbackFingerHoldPlusTap: (f) -> # stub
+	callbackObjectShake: (f) -> # stub
+
+	fingerTap : (f) -> @callbackFingerTap = f
+	fingerDoubleTap : (f) -> @callbackFingerDoubleTap = f
+	fingerHoldPlusTap : (f) -> @callbackFingerHoldPlusTap = f
+	objectShake : (f) -> @callbackObjectShake = f
+
+	# #### UI Event Listeners
+
+	# ##### Objects
 
 	addTuioObject: (object) ->
-		log "addTuioObject"
-		log object
-
-		if not @_objectsOnScreen[object.sid]?
-			model_object = new root.Model(object, root.surface, true)
-			# model_object.setText object.fid
-			@_models[object.sid] = model_object
-			@_objectsOnScreen[object.sid] = model_object
+		if not @table.isObjectModelOnScreen(object.sid)?
 			objectTimestamp = new Date().getTime()
-			@_objectUpdates[object.sid] = []
-			@_objectUpdates[object.sid].push(new ObjectUpdate(objectTimestamp,
+			@objectUpdates[object.sid] = []
+			@objectUpdates[object.sid].push(new ObjectUpdate(objectTimestamp,
 				new	Position(object.x, object.y)))
 
 	updateTuioObject: (object) ->
 		objectTimestamp = new Date().getTime()
-		model_object = @_objectsOnScreen[object.sid]
+		modelObject = @table.getObjectModel(object.sid)
 		angle = radiansToDegrees(object.angle)
 
-		if model_object?
+		if modelObject?
 			# Update visuals.
-			model_object.rotate(angle)
-			model_object.moveToTUIOCord(object.x, object.y)
+			modelObject.rotate(angle)
+			modelObject.moveToTUIOCord(object.x, object.y)
 
 			# Update set of object updates.
-			objectRecentUpdates = @_objectUpdates[object.sid]
+			objectRecentUpdates = @objectUpdates[object.sid]
 			latestUpdate = lastElement(objectRecentUpdates)
 			timeDiff = measureTime(latestUpdate.timestamp, objectTimestamp)
 
@@ -177,10 +166,10 @@ class Table
 					sliceIndex = 0
 					for objectUpdate in objectRecentUpdates
 						timeDiff = measureTime(objectUpdate.timestamp, objectTimestamp)
-						if timeDiff >= @_OBJECT_RELEVANCE_MAX_TIME
+						if timeDiff >= @OBJECT_RELEVANCE_MAX_TIME
 							sliceIndex += 1
 						else
-							@_objectUpdates[object.sid] = objectRecentUpdates[sliceIndex...]
+							@objectUpdates[object.sid] = objectRecentUpdates[sliceIndex...]
 							break
 
 					# Try to recognise a shake gesture
@@ -189,32 +178,24 @@ class Table
 						@foldUnfoldObject(object)
 
 	removeTuioObject: (object) ->
-		log "removeTuioObject"
-		model_object = @_objectsOnScreen[object.sid]
-		model_object.remove() # HTML tag bookkeeping
-		delete @_objectsOnScreen[object.sid]
-		delete @_models[object.sid]
-		delete @_objectUpdates[object.sid]
+		delete @objectUpdates[object.sid]
+		@table.removeObjectModel(object)
 
-	# Cursors
+	# ##### Cursors
 
 	addTuioCursor: (cursor) ->
-		log "addTuioCursor"
-		log cursor
 		timestampStart = new Date().getTime()
 		positionStart = new Position(cursor.x, cursor.y)
-		@_cursorCurrentPresses[cursor.sid] =
+		@cursorCurrentPresses[cursor.sid] =
 			new Cursor(timestampStart, null, positionStart, null)
 
 	updateTuioCursor: (cursor) -> # do nothing
 
 	removeTuioCursor: (cursor) ->
-		log "removeTuioCursor"
-		log cursor
 		timestampStop	= new Date().getTime()
 		positionStop = new Position(cursor.x, cursor.y)
-		oldCursorObj = @_cursorCurrentPresses[cursor.sid]
-		delete @_cursorCurrentPresses[cursor.sid]
+		oldCursorObj = @cursorCurrentPresses[cursor.sid]
+		delete @cursorCurrentPresses[cursor.sid]
 		cursorObj = new Cursor(oldCursorObj.timestampStart, timestampStop,
 			oldCursorObj.positionStart, positionStop)
 
@@ -225,14 +206,14 @@ class Table
 				nearestNeighbor = @getNearestNeighborObject(cursorObj.positionStart)
 				log "Double Tap Detected!"
 
-				if objectLength(@_objectsSelected) > 0
-					objectsSelected = @_objectsSelected
+				if objectLength(@objectsSelected) > 0
+					objectsSelected = @objectsSelected
 					for sid, object of objectsSelected
 						@deselectObject(object)
 						@foldUnfoldObject(object)
 
 				else if nearestNeighbor?
-					nearestNeighborModel = @_models[nearestNeighbor.sid]
+					nearestNeighborModel = @models[nearestNeighbor.sid]
 					@deselectObject(nearestNeighbor)
 					@foldUnfoldObject(nearestNeighbor)
 
@@ -240,7 +221,7 @@ class Table
 				nearestNeighbor = @getNearestNeighborObject(cursorObj.positionStart)
 				@selectDeselectObject(nearestNeighbor) if nearestNeighbor?
 
-			@_cursorRecentTaps.push(cursorObj)
+			@cursorRecentTaps.push(cursorObj)
 		else if @checkFlick(cursorObj)
 			# log "Flick Detected!"
 
@@ -254,12 +235,12 @@ class Table
 
 			if nearestNeighbor?
 					cursorVector = vectorFromPositions(cursorObj.positionStart, cursorObj.positionStop)
-					cursorAngle = vectorAngle(cursorVector, @_Y_UNIT_VECTOR)
+					cursorAngle = vectorAngle(cursorVector, @Y_UNIT_VECTOR)
 
 					if cursorObj.positionStop.x < cursorObj.positionStart.x
 						cursorAngle = 360 - cursorAngle # A quick trigonometry hack.
 
-					nearestNeighborModel = @_models[nearestNeighbor.sid]
+					nearestNeighborModel = @models[nearestNeighbor.sid]
 					nearestNeighborAngle = radiansToDegrees(nearestNeighbor.angle)
 
 					if sameDirection(cursorAngle, nearestNeighborAngle)
@@ -267,18 +248,18 @@ class Table
 					else if oppositeDirection(cursorAngle, nearestNeighborAngle)
 						@foldObject(nearestNeighbor)
 
-	# * Gesture Recognition *
+	# #### Gesture Recognition
 
-	# * Shake Recognition *
+	# ##### Shake Recognition
 	checkShake: (object, objectTimestamp) ->
-		objectRecentUpdates = @_objectUpdates[object.sid]
+		objectRecentUpdates = @objectUpdates[object.sid]
 
 		# Extract relevant updates
 		relevantUpdates = []
 		sliceIndex = 0
 		for objectUpdate in objectRecentUpdates
 			timeDiff = measureTime(objectUpdate.timestamp, objectTimestamp)
-			if timeDiff >= @_SHAKE_MAX_TIME
+			if timeDiff >= @SHAKE_MAX_TIME
 				sliceIndex += 1
 			else
 				relevantUpdates = objectRecentUpdates[sliceIndex...]
@@ -306,7 +287,7 @@ class Table
 					# log "diffAngle2:" + diffAngle
 
 				# Check if same, or new, direction.
-				if diffAngle <= @_SHAKE_MAX_DEGREE
+				if diffAngle <= @SHAKE_MAX_DEGREE
 					oldDirectionVector = vectorAddition(oldDirectionVector,
 						newDirectionVector)
 					currentPositionStop = newPosition
@@ -343,7 +324,7 @@ class Table
 			for direction in directionObjects
 							diffDistance = euclideanDistance(
 								direction.positionStart, direction.positionStop)
-							if diffDistance >= @_SHAKE_MIN_LENGTH
+							if diffDistance >= @SHAKE_MIN_LENGTH
 								refinedDirectionObjects.push(direction)
 
 			log "Refined directions"
@@ -364,9 +345,9 @@ class Table
 				i = 1
 				for direction in refinedDirectionObjects[1...]
 					if euclideanDistance(currentDirection.positionStop,
-						direction.positionStart) <= @_SPLICE_MAX_LENGTH and
+						direction.positionStart) <= @SPLICE_MAX_LENGTH and
 							vectorAngle(currentDirection.vector,
-							direction.vector) <= @_SHAKE_MAX_DEGREE
+							direction.vector) <= @SHAKE_MAX_DEGREE
 
 						currentDirection = new Direction(currentDirection.positionStart,
 							direction.positionStop, vectorAddition(currentDirection.vector,
@@ -386,9 +367,6 @@ class Table
 					direction.positionStop.x + ", " + 100 * direction.positionStop.y +
 					"), (" + direction.vector.x +	", " + direction.vector.y + ") )")
 
-			# TEST DATA! LINE BELOW SHOULD BE REMOVED
-			# splicedDirectionObjects = refinedDirectionObjects
-
 			if splicedDirectionObjects.length > 2
 				firstDirection = splicedDirectionObjects[0]
 				secondDirection = splicedDirectionObjects[1]
@@ -402,8 +380,8 @@ class Table
 					# log "diffFirstAngle: " + diffFirstAngle
 					# log "diffSecondAngle: " + diffSecondAngle
 
-					if diffFirstAngle >= 180 - @_SHAKE_MAX_DEGREE and
-						diffSecondAngle >=	180 - @_SHAKE_MAX_DEGREE
+					if diffFirstAngle >= 180 - @SHAKE_MAX_DEGREE and
+						diffSecondAngle >=	180 - @SHAKE_MAX_DEGREE
 							detectedShake = true
 							break;
 
@@ -414,12 +392,12 @@ class Table
 					newObjectUpdate = new ObjectUpdate(objectTimestamp,
 						new Position(object.x, object.y))
 
-					@_objectUpdates[object.sid] = [ newObjectUpdate ]
+					@objectUpdates[object.sid] = [ newObjectUpdate ]
 					return true
 
 			return false
 
-	# * Single Tap Recognition *
+	# ##### Single Tap Recognition
 
 	checkSingleTap: (cursorObj) ->
 		log "checkSingleTap"
@@ -430,29 +408,29 @@ class Table
 			cursorObj.positionStop)
 		# log "timeDiff:" + timeDiff
 		# log "positionDiff:" + positionDiff
-		if @_TAP_MIN_TIME <= timeDiff and timeDiff <= @_TAP_MAX_TIME and
-				@_TAP_MIN_LENGTH <= positionDiff and positionDiff <= @_TAP_MAX_LENGTH
+		if @TAP_MIN_TIME <= timeDiff and timeDiff <= @TAP_MAX_TIME and
+				@TAP_MIN_LENGTH <= positionDiff and positionDiff <= @TAP_MAX_LENGTH
 			return true
 		else
 			return false
 
-	# * Double Tap Recognition *
+	# ##### Double Tap Recognition
 
 	checkDoubleTap: (cursorObj) ->
 		log "checkDoubleTap"
 		for cursor in @_cursorRecentTaps
 			timeDiff = measureTime(cursorObj.timestampStop, cursor.timestampStop)
 			posDiff = euclideanDistance(cursorObj.positionStop, cursor.positionStop)
-			if (@_DOUBLE_TAP_MIN_TIME <= timeDiff and
-			timeDiff <=	@_DOUBLE_TAP_MAX_TIME and
-			@_DOUBLE_TAP_MIN_LENGTH <= posDiff and
-			posDiff <= @_DOUBLE_TAP_MAX_LENGTH)
+			if (@DOUBLE_TAP_MIN_TIME <= timeDiff and
+			timeDiff <=	@DOUBLE_TAP_MAX_TIME and
+			@DOUBLE_TAP_MIN_LENGTH <= posDiff and
+			posDiff <= @DOUBLE_TAP_MAX_LENGTH)
 				# log "timeDiff:" + timeDiff
 				# log "positionDiff:" + posDiff
 				return true
 		return false
 
-	# * Pressed + Flick Recognition *
+	# ##### Pressed + Flick Recognition
 
 	getNearestNeighborCursor: (position) ->
 			log "getNearestNeighborCursor"
@@ -460,7 +438,7 @@ class Table
 			nearestNeighborCursor = null
 			nearestNeighborDist = 1
 
-			for k, cursor of @_cursorCurrentPresses
+			for k, cursor of @cursorCurrentPresses
 				cursorPos = cursor.positionStart
 				posDiff = euclideanDistance(position, cursorPos)
 
@@ -468,27 +446,27 @@ class Table
 					nearestNeighborDist = posDiff
 					nearestNeighborCursor = cursor
 
-			if nearestNeighborDist < @_NEAREST_NEIGHBOR_MAX_LENGTH
+			if nearestNeighborDist < @NEAREST_NEIGHBOR_MAX_LENGTH
 				return nearestNeighborCursor
 			else
 				return null
 
-	# * Flick Recognition *
+	# ##### Flick Recognition
 
 	checkFlick: (cursorObj) ->
 		log "checkFlick"
 		# Calculate the angle of the flick gesture.
 		cursorVector = vectorFromPositions(cursorObj.positionStart,
 			cursorObj.positionStop)
-		cursorAngle = vectorAngle(cursorVector, @_Y_UNIT_VECTOR)
+		cursorAngle = vectorAngle(cursorVector, @Y_UNIT_VECTOR)
 		if cursorObj.positionStop.x < cursorObj.positionStart.x
 			cursorAngle = 360 - cursorAngle # A quick trigonometry hack.
 
 		posDiff = euclideanDistance(cursorObj.positionStart, cursorObj.positionStop)
 		timeDiff = measureTime(cursorObj.timestampStart, cursorObj.timestampStop)
 
-		if posDiff > @_FLICK_MIN_LENGTH and posDiff < @_FLICK_MAX_LENGTH and
-				timeDiff > @_FLICK_MIN_TIME and timeDiff < @_FLICK_MAX_TIME
+		if posDiff > @FLICK_MIN_LENGTH and posDiff < @FLICK_MAX_LENGTH and
+				timeDiff > @FLICK_MIN_TIME and timeDiff < @FLICK_MAX_TIME
 			return true
 		else
 			return false
@@ -500,7 +478,7 @@ class Table
 			nearestNeighborDist = 1
 
 			for object in tuio.objects
-				if @_objectsOnScreen[object.sid]?
+				if @objectsOnScreen[object.sid]?
 					objectPos = new Position(object.x, object.y)
 					posDiff = euclideanDistance(position, objectPos)
 
@@ -508,106 +486,66 @@ class Table
 						nearestNeighborDist = posDiff
 						nearestNeighborObj = object
 
-			if nearestNeighborDist < @_NEAREST_NEIGHBOR_MAX_LENGTH
+			if nearestNeighborDist < @NEAREST_NEIGHBOR_MAX_LENGTH
 				return nearestNeighborObj
 			else
 				return null
 
-	# * Object Manipulation *
+	# #### Object Manipulation
 
 	selectDeselectObject: (object) ->
 		log "selectDeselectObject"
-		model_object = @_models[object.sid]
-		if model_object.selected is false
+		modelObject = @models[object.sid]
+		if modelObject.selected is false
 			@selectObject(object)
 		else
 			@deselectObject(object)
 
 	selectObject: (object) ->
 		log "selectObject"
-		model_object = @_models[object.sid]
-		if model_object.selected is false
-			model_object.changeColor(@_SELECTED_COLOR)
-			model_object.selected = true
-			@_objectsSelected[object.sid] = object
+		modelObject = @models[object.sid]
+		if modelObject.selected is false
+			modelObject.changeColor(@SELECTED_COLOR)
+			modelObject.selected = true
+			@objectsSelected[object.sid] = object
 
 	deselectObject: (object) ->
 		log "deselectObject"
-		model_object = @_models[object.sid]
-		if model_object.selected is true
-			if model_object.unfolded is true
-				model_object.changeColor(@_UNFOLDED_COLOR)
+		modelObject = @models[object.sid]
+		if modelObject.selected is true
+			if modelObject.unfolded is true
+				modelObject.changeColor(@UNFOLDED_COLOR)
 			else
-				model_object.changeColor(@_FOLDED_COLOR)
-			model_object.selected = false
-			delete @_objectsSelected[object.sid]
+				modelObject.changeColor(@FOLDED_COLOR)
+			modelObject.selected = false
+			delete @objectsSelected[object.sid]
 
 	foldUnfoldObject: (object) ->
 		log "foldUnfoldObject"
-		model_object = @_models[object.sid]
-		if model_object.unfolded is false
+		modelObject = @_models[object.sid]
+		if modelObject.unfolded is false
 			@unfoldObject(object)
 		else
 			@foldObject(object)
 
 	unfoldObject: (object) ->
 		log "unfoldObject"
-		model_object = @_models[object.sid]
-		model_object.changeColor(@_UNFOLDED_COLOR)
-		model_object.unfolded = true
+		modelObject = @models[object.sid]
+		modelObject.changeColor(@UNFOLDED_COLOR)
+		modelObject.unfolded = true
 
 	foldObject: (object) ->
 		log "hideObjectStats"
-		model_object = @_models[object.sid]
-		model_object.changeColor(@_FOLDED_COLOR)
-		model_object.unfolded = false
+		modelObject = @models[object.sid]
+		modelObject.changeColor(@FOLDED_COLOR)
+		modelObject.unfolded = false
 
-# -*- Functions -*-
+# ## Functions
 
-# Vectors
+first = (arr) -> arr[0]
+last = (arr) -> arr[(arr.length)-1]
 
-vectorFromPositions = (start, end) ->
-	v = new Vector((start.x - end.x) * 100,	(start.y - end.y) * 100)
-
-vectorFromDegrees = (degrees) ->
-	v = new Vector(Math.cos(degrees), Math.sin(degrees))
-
-vectorAngle = (v1, v2) ->
-	radiansToDegrees(
-		Math.acos vectorDotProduct(vectorNormalize(v1), vectorNormalize(v2)))
-
-vectorAddition = (v1, v2) ->
-	v = new Vector(v1.x + v2.x, v1.y + v2.y)
-
-vectorLength = (v) -> Math.sqrt(v.x * v.x + v.y * v.y)
-
-vectorDotProduct = (v1, v2) -> v1.x * v2.x + v1.y * v2.y
-
-vectorNormalize = (v) ->
-	length = vectorLength v
-	normalized = new Vector(v.x / length, v.y / length)
-
-# Metrics
-
-sameDirection = (a1, a2) ->
-	diffAngle = Math.abs(a1 - a2)
-	return 0 <= diffAngle and diffAngle <= 30
-
-oppositeDirection = (a1, a2) ->
-	diffAngle = Math.abs(a1 - a2)
-	return 150 <= diffAngle and diffAngle <= 210
-
-radiansToDegrees = (radians) -> radians * (180 / Math.PI)
-
-euclideanDistance = (q, p) -> Math.sqrt(Math.pow(q.x-p.x,2)+Math.pow(q.y-p.y,2))
-
-measureTime = (start, stop) -> Math.abs(stop - start)
-
-lastElement = (arr) -> arr[(arr.length)-1]
-
-# Misc
-
-log = (string) -> # console.log string
+log = (string) -> console.log string
 
 map = (list, func) -> func(x) for x in list
 
@@ -619,18 +557,46 @@ objectLength = (obj) ->
 		length += 1
 	return length
 
-# -*- Initialization -*-
+# ### Initialization
+#
+# Sets up the gesture recognition installation by initializing the
+# three main components: `TableModel`, `GestureInterpreter`, and
+#`TUIOInterpreter` along with a range of minor convenience classes.
+root = exports ? window
 
 $(document).ready () ->
 
-	root._stylesheetDocs = {}
-	root._modelDocs = {}
+	root.surface = $('#surface')
 
-	root.surface = $("#surface")
-
-	#Wait a bit and load stuff
+	# Wait a bit and load stuff
 	setTimeout () =>
-		table = new Table()
+		# The `table` is our main data model while the `tuioInterpreter` is in
+		# charge of inferring gestures from low-level sensor data and update the
+		# data model according to object and cursor movement. Lastly, the
+		# `gestureInterpreter` dispatches on gesture updates received from the
+		# `tuioInterpreter` and manipulates the state of objects found in the data
+		# model.
+		stylesheet = {
+			objectSelectedColor : {
+				red : 100,
+				green : 45,
+				blue : 214
+			},
+			objectFoldedColor : {
+				red : 214,
+				green : 135,
+				blue : 45
+			},
+			objectUnfoldedColor : {
+				red : 45,
+				green : 214,
+				blue : 24
+			}
+		}
+
+		table = new Table(root.surface, stylesheet)
+		tuioInterpreter = new TUIOInterpreter(table) # Infers motion and gestures
+		gestureInterpreter = new GestureInterpreter(table, tuioInterpreter) # Manipulates
 		2000
 
 # end-of-flick.coffee

@@ -1,24 +1,17 @@
-# app.coffee
-#
-# @author Peter Urbak
-# @version 2012-12-18
+# **Author:** Peter Urbak<br/>
+# **Version:** 2013-01-28
 
 express = require 'express'
 
+# The `Server` has the single purpose of starting a `node.js` web server which
+# listens on port 8000.
 class Server
-	###
-	The gesture recognition server.
-	###
 
+	# Constructs a `Server`.
 	constructor: (port) ->
-		###
-		Constructs a Server.
-		###
 		@app = express()
 		@app.use(express.static(__dirname + '/html'))
 		@app.listen port
 		console.log "Server listening on port " + port
 
 server = new Server(8000)
-
-# end-of-app.coffee
