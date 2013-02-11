@@ -6,14 +6,14 @@ root = exports ? window
 root.App = {}
 
 # Add `first` and `last` functions to the `Array` class.
-Array.prototype.first = () -> @[0]
-Array.prototype.last = () -> @[@.length-1]
+Array::first = () -> @[0]
+Array::last = () -> @[@.length-1]
 
 # Add a `length` function to the `Object` class.
 #
 # Returns the number of properties on the object minus length itself.
 # Note: not sure if this is bad style.
-Object.prototype.length = () ->
+Object::length = () ->
 	length = 0
 	for key, value of @
 		if key isnt length

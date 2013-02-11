@@ -75,9 +75,9 @@ class App.TUIOInterpreter
 		tuio.object_update (object) => @updateTuioObject(object)
 		tuio.object_remove (object) => @removeTuioObject(object)
 
-		tuio.cursor_add (object) => @addTuioCursor(cursor)
-		tuio.cursor_update (object) => @updateTuioCursor(cursor)
-		tuio.cursor_remove (object) => @removeTuioCursor(cursor)
+		tuio.cursor_add (cursor) => @addTuioCursor(cursor)
+		tuio.cursor_update (cursor) => @updateTuioCursor(cursor)
+		tuio.cursor_remove (cursor) => @removeTuioCursor(cursor)
 
 	# #### Callbacks
 
@@ -129,18 +129,18 @@ class App.TUIOInterpreter
 
 			# Update set of object updates.
 			objectRecentUpdates = @objectUpdates[object.sid]
-			latestUpdate = lastElement(objectRecentUpdates)
-			timeDiff = measureTime(latestUpdate.timestamp, objectTimestamp)
+			latestUpdate = objectRecentUpdates.last()
+			timeDiff = App.measureTime(latestUpdate.timestamp, objectTimestamp)
 
 			# Add new entry if a sufficient amount of time has passed.
 			if timeDiff >= 100
-					objectRecentUpdates.push(new ObjectUpdate(objectTimestamp,
-						new Position(object.x, object.y)))
+					objectRecentUpdates.push(new App.ObjectUpdate(objectTimestamp,
+						new App.Position(object.x, object.y)))
 
 					# Then remove old entries
 					sliceIndex = 0
 					for objectUpdate in objectRecentUpdates
-						timeDiff = measureTime(objectUpdate.timestamp, objectTimestamp)
+						timeDiff = App.measureTime(objectUpdate.timestamp, objectTimestamp)
 						if timeDiff >= @OBJECT_RELEVANCE_MAX_TIME
 							sliceIndex += 1
 						else
@@ -149,8 +149,8 @@ class App.TUIOInterpreter
 
 					# Try to recognise a shake gesture
 					if @checkShake(object, objectTimestamp)
-						log "Shake Detected!"
-						@foldUnfoldObject(object)
+						App.log "Shake Detected!"
+						@callbackObjectShake(object)
 
 	# Removes an object
 	#
@@ -166,9 +166,9 @@ class App.TUIOInterpreter
 	# - **cursor:** The cursor to be added.
 	addTuioCursor: (cursor) ->
 		timestampStart = new Date().getTime()
-		positionStart = new Position(cursor.x, cursor.y)
+		positionStart = new App.Position(cursor.x, cursor.y)
 		@cursorCurrentPresses[cursor.sid] =
-			new Cursor(timestampStart, null, positionStart, null)
+			new App.CursorModel(timestampStart, null, positionStart, null)
 
 	# Update a cursor.
 	#
@@ -180,20 +180,20 @@ class App.TUIOInterpreter
 	# - **cursor:** The cursor to be removed.
 	removeTuioCursor: (cursor) ->
 		timestampStop	= new Date().getTime()
-		positionStop = new Position(cursor.x, cursor.y)
+		positionStop = new App.Position(cursor.x, cursor.y)
 		oldCursorObj = @cursorCurrentPresses[cursor.sid]
 		delete @cursorCurrentPresses[cursor.sid]
-		cursorObj = new Cursor(oldCursorObj.timestampStart, timestampStop,
+		cursorObj = new App.CursorModel(oldCursorObj.timestampStart, timestampStop,
 			oldCursorObj.positionStart, positionStop)
 
 		if @checkSingleTap(cursorObj)
-			log "Single Tap Detected!"
+			App.log "Single Tap Detected!"
 
 			if @checkDoubleTap(cursorObj)
 				nearestNeighbor = @getNearestNeighborObject(cursorObj.positionStart)
-				log "Double Tap Detected!"
+				App.log "Double Tap Detected!"
 
-				if objectLength(@objectsSelected) > 0
+				if @objectsSelected.length() > 0
 					objectsSelected = @objectsSelected
 					for sid, object of objectsSelected
 						@deselectObject(object)
@@ -210,19 +210,20 @@ class App.TUIOInterpreter
 
 			@cursorRecentTaps.push(cursorObj)
 		else if @checkFlick(cursorObj)
-			# log "Flick Detected!"
+			# App.log "Flick Detected!"
 
 			neighborQueryObject = cursorObj
 			nearestNeighborCursor = @getNearestNeighborCursor(cursorObj.positionStart)
 			if nearestNeighborCursor?
-				log "Pressed+Flick Detected!"
+				App.log "Pressed+Flick Detected!"
 				neighborQueryObject = nearestNeighborCursor
 
 			nearestNeighbor = @getNearestNeighborObject(neighborQueryObject.positionStart)
 
 			if nearestNeighbor?
-					cursorVector = vectorFromPositions(cursorObj.positionStart, cursorObj.positionStop)
-					cursorAngle = vectorAngle(cursorVector, @Y_UNIT_VECTOR)
+					cursorVector = App.vectorFromPositions(cursorObj.positionStart,
+						cursorObj.positionStop)
+					cursorAngle = App.vectorAngle(cursorVector, @Y_UNIT_VECTOR)
 
 					if cursorObj.positionStop.x < cursorObj.positionStart.x
 						cursorAngle = 360 - cursorAngle # A quick trigonometry hack.
@@ -250,7 +251,7 @@ class App.TUIOInterpreter
 		relevantUpdates = []
 		sliceIndex = 0
 		for objectUpdate in objectRecentUpdates
-			timeDiff = measureTime(objectUpdate.timestamp, objectTimestamp)
+			timeDiff = App.measureTime(objectUpdate.timestamp, objectTimestamp)
 			if timeDiff >= @SHAKE_MAX_TIME
 				sliceIndex += 1
 			else
@@ -264,31 +265,31 @@ class App.TUIOInterpreter
 			currentPositionStart = relevantUpdates[0].position
 			currentPositionStop = relevantUpdates[1].position
 			oldPosition = relevantUpdates[1].position
-			oldDirectionVector = vectorFromPositions(relevantUpdates[0].position,
+			oldDirectionVector = App.vectorFromPositions(relevantUpdates[0].position,
 				relevantUpdates[1].position)
 
 			for objectUpdate in relevantUpdates[2...]
 				newPosition = objectUpdate.position
-				newDirectionVector = vectorFromPositions(oldPosition,
+				newDirectionVector = App.vectorFromPositions(oldPosition,
 					newPosition)
 
-				diffAngle = vectorAngle(oldDirectionVector, newDirectionVector)
-				# log "diffAngle1:" + diffAngle
+				diffAngle = App.vectorAngle(oldDirectionVector, newDirectionVector)
+				# App.log "diffAngle1:" + diffAngle
 				# if newPosition.x < oldPosition.x
 				#			diffAngle = 360 - diffAngle # A quick trigonometry hack.
-					# log "diffAngle2:" + diffAngle
+					# App.log "diffAngle2:" + diffAngle
 
 				# Check if same, or new, direction.
 				if diffAngle <= @SHAKE_MAX_DEGREE
-					oldDirectionVector = vectorAddition(oldDirectionVector,
+					oldDirectionVector = App.vectorAddition(oldDirectionVector,
 						newDirectionVector)
 					currentPositionStop = newPosition
 				else # A new direction has been taken (maybe)
 					# Save old direction object
-					# log "diffAngle: " + diffAngle
-					directionObject = new Direction(currentPositionStart,
+					# App.log "diffAngle: " + diffAngle
+					directionObject = new App.Direction(currentPositionStart,
 						currentPositionStop, oldDirectionVector)
-					# log "new direction: " + directionObject
+					# App.log "new direction: " + directionObject
 					directionObjects.push(directionObject)
 
 					# Start recording the new direction
@@ -300,33 +301,33 @@ class App.TUIOInterpreter
 				oldDirectionVector = newDirectionVector
 
 			# Make sense of the gathered vectors
-			# log "Unfiltered directions"
+			# App.log "Unfiltered directions"
 			# for direction in directionObjects
-			#			log("direction: ( (" + 100 * direction.positionStart.x + ", "
+			#			App.log("direction: ( (" + 100 * direction.positionStart.x + ", "
 			#				100 * direction.positionStart.y + "), (" + 100 * direction.positionStop.x + ", " +
 			#				100 * direction.positionStop.y + "), (" + direction.vector.x + ", "+
 			#				direction.vector.y + ") )")
 
 			# 1. Remove directions with too short a distance
 			# refinedDirectionObjects = filter(directionObjects,
-			#		((obj) -> euclideanDistance(obj.positionStart, obj.positionStop) >=
+			#		((obj) -> App.euclideanDistance(obj.positionStart, obj.positionStop) >=
 			#			@_SHAKE_MIN_LENGTH))
 
 			refinedDirectionObjects = []
 			for direction in directionObjects
-							diffDistance = euclideanDistance(
+							diffDistance = App.euclideanDistance(
 								direction.positionStart, direction.positionStop)
 							if diffDistance >= @SHAKE_MIN_LENGTH
 								refinedDirectionObjects.push(direction)
 
-			log "Refined directions"
+			App.log "Refined directions"
 			for direction in refinedDirectionObjects
-						log("direction: ( (" + 100 * direction.positionStart.x + ", " +
+						App.log("direction: ( (" + 100 * direction.positionStart.x + ", " +
 							100 * direction.positionStart.y + "), (" +
 							100 *	direction.positionStop.x + ", " +
 							100 * direction.positionStop.y + "), (" +
 							direction.vector.x + ", "+ direction.vector.y + ") )")
-					log("length: " + euclideanDistance(direction.positionStart,
+					App.log("length: " + App.euclideanDistance(direction.positionStart,
 						direction.positionStop))
 
 			# 2. Splice neighbors if possible
@@ -336,14 +337,14 @@ class App.TUIOInterpreter
 				currentDirection = refinedDirectionObjects[0]
 				i = 1
 				for direction in refinedDirectionObjects[1...]
-					if euclideanDistance(currentDirection.positionStop,
+					if App.euclideanDistance(currentDirection.positionStop,
 						direction.positionStart) <= @SPLICE_MAX_LENGTH and
-							vectorAngle(currentDirection.vector,
+							App.vectorAngle(currentDirection.vector,
 							direction.vector) <= @SHAKE_MAX_DEGREE
 
-						currentDirection = new Direction(currentDirection.positionStart,
-							direction.positionStop, vectorAddition(currentDirection.vector,
-							direction.vector))
+						currentDirection = new App.Direction(currentDirection.positionStart,
+							direction.positionStop, App.vectorAddition(
+								currentDirection.vector, direction.vector))
 					else
 						splicedDirectionObjects.push(currentDirection)
 						currentDirection = direction
@@ -352,9 +353,9 @@ class App.TUIOInterpreter
 						splicedDirectionObjects.push(currentDirection)
 					i += 1
 
-			log "Spliced directions"
+			App.log "Spliced directions"
 			for direction in splicedDirectionObjects
-				log("direction: ( (" + 100 * direction.positionStart.x + ", " +
+				App.log("direction: ( (" + 100 * direction.positionStart.x + ", " +
 					100 * direction.positionStart.y + "), (" + 100 *
 					direction.positionStop.x + ", " + 100 * direction.positionStop.y +
 					"), (" + direction.vector.x +	", " + direction.vector.y + ") )")
@@ -365,12 +366,12 @@ class App.TUIOInterpreter
 				detectedShake = false
 				for direction in splicedDirectionObjects[2...]
 
-					diffFirstAngle = vectorAngle(firstDirection.vector,
+					diffFirstAngle = App.vectorAngle(firstDirection.vector,
 						secondDirection.vector)
-					diffSecondAngle = vectorAngle(secondDirection.vector,
+					diffSecondAngle = App.vectorAngle(secondDirection.vector,
 						direction.vector)
-					# log "diffFirstAngle: " + diffFirstAngle
-					# log "diffSecondAngle: " + diffSecondAngle
+					# App.log "diffFirstAngle: " + diffFirstAngle
+					# App.log "diffSecondAngle: " + diffSecondAngle
 
 					if diffFirstAngle >= 180 - @SHAKE_MAX_DEGREE and
 						diffSecondAngle >=	180 - @SHAKE_MAX_DEGREE
@@ -381,8 +382,8 @@ class App.TUIOInterpreter
 					secondDirection = direction
 
 				if detectedShake is true
-					newObjectUpdate = new ObjectUpdate(objectTimestamp,
-						new Position(object.x, object.y))
+					newObjectUpdate = new App.ObjectUpdate(objectTimestamp,
+						new App.Position(object.x, object.y))
 
 					@objectUpdates[object.sid] = [ newObjectUpdate ]
 					return true
@@ -395,14 +396,15 @@ class App.TUIOInterpreter
 	#
 	# - **cursorObj:**
 	checkSingleTap: (cursorObj) ->
-		log "checkSingleTap"
-		# log cursorObj.timestampStart
-		# log cursorObj.timestampStop
-		timeDiff = measureTime(cursorObj.timestampStart, cursorObj.timestampStop)
-		positionDiff = euclideanDistance(cursorObj.positionStart,
+		App.log "checkSingleTap"
+		# App.log cursorObj.timestampStart
+		# App.log cursorObj.timestampStop
+		timeDiff = App.measureTime(cursorObj.timestampStart,
+			cursorObj.timestampStop)
+		positionDiff = App.euclideanDistance(cursorObj.positionStart,
 			cursorObj.positionStop)
-		# log "timeDiff:" + timeDiff
-		# log "positionDiff:" + positionDiff
+		# App.log "timeDiff:" + timeDiff
+		# App.log "positionDiff:" + positionDiff
 		if @TAP_MIN_TIME <= timeDiff and timeDiff <= @TAP_MAX_TIME and
 				@TAP_MIN_LENGTH <= positionDiff and positionDiff <= @TAP_MAX_LENGTH
 			return true
@@ -415,16 +417,17 @@ class App.TUIOInterpreter
 	#
 	# - **cursorObj:**
 	checkDoubleTap: (cursorObj) ->
-		log "checkDoubleTap"
-		for cursor in @_cursorRecentTaps
-			timeDiff = measureTime(cursorObj.timestampStop, cursor.timestampStop)
-			posDiff = euclideanDistance(cursorObj.positionStop, cursor.positionStop)
+		App.log "checkDoubleTap"
+		for cursor in @cursorRecentTaps
+			timeDiff = App.measureTime(cursorObj.timestampStop, cursor.timestampStop)
+			posDiff = App.euclideanDistance(cursorObj.positionStop,
+				cursor.positionStop)
 			if (@DOUBLE_TAP_MIN_TIME <= timeDiff and
 			timeDiff <=	@DOUBLE_TAP_MAX_TIME and
 			@DOUBLE_TAP_MIN_LENGTH <= posDiff and
 			posDiff <= @DOUBLE_TAP_MAX_LENGTH)
-				# log "timeDiff:" + timeDiff
-				# log "positionDiff:" + posDiff
+				# App.log "timeDiff:" + timeDiff
+				# App.log "positionDiff:" + posDiff
 				return true
 		return false
 
@@ -434,14 +437,14 @@ class App.TUIOInterpreter
 	#
 	# - **position:**
 	getNearestNeighborCursor: (position) ->
-			log "getNearestNeighborCursor"
+			App.log "getNearestNeighborCursor"
 			# Naive Linear Search
 			nearestNeighborCursor = null
 			nearestNeighborDist = 1
 
 			for k, cursor of @cursorCurrentPresses
 				cursorPos = cursor.positionStart
-				posDiff = euclideanDistance(position, cursorPos)
+				posDiff = App.euclideanDistance(position, cursorPos)
 
 				if posDiff < nearestNeighborDist
 					nearestNeighborDist = posDiff
@@ -458,16 +461,18 @@ class App.TUIOInterpreter
 	#
 	# - **cursorObj:**
 	checkFlick: (cursorObj) ->
-		log "checkFlick"
+		App.log "checkFlick"
 		# Calculate the angle of the flick gesture.
-		cursorVector = vectorFromPositions(cursorObj.positionStart,
+		cursorVector = App.vectorFromPositions(cursorObj.positionStart,
 			cursorObj.positionStop)
-		cursorAngle = vectorAngle(cursorVector, @Y_UNIT_VECTOR)
+		cursorAngle = App.vectorAngle(cursorVector, @Y_UNIT_VECTOR)
 		if cursorObj.positionStop.x < cursorObj.positionStart.x
 			cursorAngle = 360 - cursorAngle # A quick trigonometry hack.
 
-		posDiff = euclideanDistance(cursorObj.positionStart, cursorObj.positionStop)
-		timeDiff = measureTime(cursorObj.timestampStart, cursorObj.timestampStop)
+		posDiff = App.euclideanDistance(cursorObj.positionStart,
+			cursorObj.positionStop)
+		timeDiff = App.measureTime(cursorObj.timestampStart,
+			cursorObj.timestampStop)
 
 		if posDiff > @FLICK_MIN_LENGTH and posDiff < @FLICK_MAX_LENGTH and
 				timeDiff > @FLICK_MIN_TIME and timeDiff < @FLICK_MAX_TIME
@@ -479,15 +484,15 @@ class App.TUIOInterpreter
 	#
 	# - **position:**
 	getNearestNeighborObject: (position) ->
-			log "getNearestNeighborObject"
+			App.log "getNearestNeighborObject"
 			# Naive Linear Search
 			nearestNeighborObj = null
 			nearestNeighborDist = 1
 
 			for object in tuio.objects
 				if @objectsOnScreen[object.sid]?
-					objectPos = new Position(object.x, object.y)
-					posDiff = euclideanDistance(position, objectPos)
+					objectPos = new App.Position(object.x, object.y)
+					posDiff = App.euclideanDistance(position, objectPos)
 
 					if posDiff < nearestNeighborDist
 						nearestNeighborDist = posDiff

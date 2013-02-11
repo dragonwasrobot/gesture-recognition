@@ -31,18 +31,18 @@ class App.GestureInterpreter
 	# #### Finger Gestures
 
 	handleFingerTap: (gesture) ->
-		log "handleFingerTap"
+		App.log "handleFingerTap"
 
 	handleFingerDoubleTap: (gesture) ->
-		log "handleFingerDoubleTap"
+		App.log "handleFingerDoubleTap"
 
 	handleFingerHoldPlusTap: (gesture) ->
-		log "handleFingerHoldPlusTap"
+		App.log "handleFingerHoldPlusTap"
 
 	# #### Object Gestures
 
 	handleObjectShake: (gesture) ->
-		log "handleObjectShake"
+		App.log "handleObjectShake"
 
 	# #### Object Manipulation
 
@@ -50,7 +50,7 @@ class App.GestureInterpreter
 	#
 	# - **object:**
 	selectDeselectObject: (object) ->
-		log "selectDeselectObject"
+		App.log "selectDeselectObject"
 		modelObject = @models[object.sid]
 		if modelObject.selected is false
 			@selectObject(object)
@@ -61,7 +61,7 @@ class App.GestureInterpreter
 	#
 	# - **object:**
 	selectObject: (object) ->
-		log "selectObject"
+		App.log "selectObject"
 		modelObject = @models[object.sid]
 		if modelObject.selected is false
 			modelObject.changeColor(@SELECTED_COLOR)
@@ -72,7 +72,7 @@ class App.GestureInterpreter
 	#
 	# - **object:**
 	deselectObject: (object) ->
-		log "deselectObject"
+		App.log "deselectObject"
 		modelObject = @models[object.sid]
 		if modelObject.selected is true
 			if modelObject.unfolded is true
@@ -86,7 +86,7 @@ class App.GestureInterpreter
 	#
 	# - **object:**
 	foldUnfoldObject: (object) ->
-		log "foldUnfoldObject"
+		App.log "foldUnfoldObject"
 		modelObject = @_models[object.sid]
 		if modelObject.unfolded is false
 			@unfoldObject(object)
@@ -97,7 +97,7 @@ class App.GestureInterpreter
 	#
 	# - **object:**
 	unfoldObject: (object) ->
-		log "unfoldObject"
+		App.log "unfoldObject"
 		modelObject = @models[object.sid]
 		modelObject.changeColor(@UNFOLDED_COLOR)
 		modelObject.unfolded = true
@@ -106,7 +106,7 @@ class App.GestureInterpreter
 	#
 	# - **object:**
 	foldObject: (object) ->
-		log "hideObjectStats"
+		App.log "hideObjectStats"
 		modelObject = @models[object.sid]
 		modelObject.changeColor(@FOLDED_COLOR)
 		modelObject.unfolded = false

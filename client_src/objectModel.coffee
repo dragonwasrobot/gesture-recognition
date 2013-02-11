@@ -1,9 +1,10 @@
 # **Author:** Peter Urbak<br/>
-# **Version:** 2013-01-29
+# **Version:** 2013-02-11
 
 root = exports ? window
 
-# The `ObjectModel` encapsulates the state of an object on the multi-touch table.
+# The `ObjectModel` encapsulates the state of an object on the multi-touch
+# table.
 class App.ObjectModel
 
 	# ### Constructors
@@ -14,18 +15,19 @@ class App.ObjectModel
 	# - **surface:** The surface &lt;div&gt; tag.
 	# - **objWidth:** The object width.
 	# - **objHeight:** The object height.
-	constructor: (@object, surface, objWidth, objHeight) ->
+	constructor: (object, surface, width, height) ->
 		@unfolded = false
 		@selected = false
 
 		@div = $('<div class="model"/>')
-		@div.width = objWidth
-		@div.height = objHeight
 		surface.append @div
-		@moveToPosition @object.x, @object.y
 
-		paper = Raphael(@div.get(0), @div.width, @div.height)
-		@container = paper.rect(20, 20, @div.width, @div.height, 6)
+		@moveToPosition object.x, object.y
+
+		@div.height(@div.height() + 100) # magic.
+
+		paper = Raphael(@div.get(0), @div.width(), @div.height())
+		@container = paper.rect(20, 20, width, height, 6)
 		@container.attr('fill', 'rgb(214,135,45)')
 
 	# Moves the `ObjectModel` to the specified set of coordinates.
@@ -34,9 +36,9 @@ class App.ObjectModel
 	# - **y:** The y-coordinate.
 	moveToPosition: (x, y) ->
 
-		position = @div.position
-		width = @div.width
-		height = @div.height
+		position = @div.position()
+		width = @div.width()
+		height = @div.height()
 
 		parentWidth = @div.offsetParent().width()
 		parentHeight = @div.offsetParent().height()

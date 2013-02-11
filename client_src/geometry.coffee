@@ -26,28 +26,29 @@ class App.Direction
 # - **start:** The start position
 # - **end:** The stop position
 App.vectorFromPositions = (start, end) ->
-	v = new Vector((start.x - end.x) * 100,	(start.y - end.y) * 100)
+	v = new App.Vector((start.x - end.x) * 100,	(start.y - end.y) * 100)
 
 # Creates a vector from a degree value
 #
 # - **degrees:** The degrees
 App.vectorFromDegrees = (degrees) ->
-	v = new Vector(Math.cos(degrees), Math.sin(degrees))
+	v = new App.Vector(Math.cos(degrees), Math.sin(degrees))
 
 # Returns the angle between two vectors
 #
 # - **v1:** The first vector
 # - **v2:** The second vector
 App.vectorAngle = (v1, v2) ->
-	radiansToDegrees(
-		Math.acos vectorDotProduct(vectorNormalize(v1), vectorNormalize(v2)))
+	App.radiansToDegrees(
+		Math.acos App.vectorDotProduct(App.vectorNormalize(v1),
+			App.vectorNormalize(v2)))
 
 # Adds two vectors
 #
 # - **v1:** The first vector
 # - **v2:** The second vector
 App.vectorAddition = (v1, v2) ->
-	v = new Vector(v1.x + v2.x, v1.y + v2.y)
+	v = new App.Vector(v1.x + v2.x, v1.y + v2.y)
 
 # Returns the length of a vector
 #
@@ -64,8 +65,8 @@ App.vectorDotProduct = (v1, v2) -> v1.x * v2.x + v1.y * v2.y
 #
 # - **v:** The vector to be normalized.
 App.vectorNormalize = (v) ->
-	length = vectorLength v
-	normalized = new Vector(v.x / length, v.y / length)
+	length = App.vectorLength v
+	normalized = new App.Vector(v.x / length, v.y / length)
 
 # ### Metrics
 
@@ -95,7 +96,7 @@ App.radiansToDegrees = (radians) -> radians * (180 / Math.PI)
 # - **q:** The first position
 # - **p:** The second position
 App.euclideanDistance = (q, p) ->
-	Math.sqrt(Math.pow(q.x-p.x,2)+Math.pow(q.y-p.y,2))
+	Math.sqrt(Math.pow(q.x - p.x, 2) + Math.pow(q.y - p.y, 2))
 
 # Calculates the difference between two points in time
 #
