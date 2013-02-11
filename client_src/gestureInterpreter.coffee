@@ -1,6 +1,8 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-01-29
 
+root = exports ? window
+
 # The `GestureInterpreter` registers gestures and callback functions on the
 # `TUIOInterpreter` and then dispatches on the received gesture updates from the
 # `TUIOInterpreter`.

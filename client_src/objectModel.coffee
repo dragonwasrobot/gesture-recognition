@@ -1,7 +1,7 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-01-29
 
-root = window ? exports
+root = exports ? window
 
 # The `ObjectModel` encapsulates the state of an object on the multi-touch table.
 class App.ObjectModel
@@ -34,9 +34,9 @@ class App.ObjectModel
 	# - **y:** The y-coordinate.
 	moveToPosition: (x, y) ->
 
-		position = @div.position()
-		width = @div.width()
-		height = @div.height()
+		position = @div.position
+		width = @div.width
+		height = @div.height
 
 		parentWidth = @div.offsetParent().width()
 		parentHeight = @div.offsetParent().height()

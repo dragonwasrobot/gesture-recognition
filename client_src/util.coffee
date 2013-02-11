@@ -1,24 +1,24 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-01-29
 
-# Initialize Namespace
+# Initialize namespace
 root = exports ? window
 root.App = {}
 
-# `util.coffee` contains a small range of convenience functions.
+# Add `first` and `last` functions to the `Array` class.
+Array.prototype.first = () -> @[0]
+Array.prototype.last = () -> @[@.length-1]
 
-App.first = (arr) -> arr[0]
-
-App.last = (arr) -> arr[(arr.length)-1]
-
-App.log = (string) -> console.log string
-
-App.map = (list, func) -> func(x) for x in list
-
-App.filter = (list, func) -> x for x in list when func(x)
-
-App.objectLength = (obj) ->
+# Add a `length` function to the `Object` class.
+#
+# Returns the number of properties on the object minus length itself.
+# Note: not sure if this is bad style.
+Object.prototype.length = () ->
 	length = 0
-	for key, value of obj
-		length += 1
+	for key, value of @
+		if key isnt length
+			length += 1
 	return length
+
+# Logging
+App.log = (string) -> console.log string

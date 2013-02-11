@@ -1,6 +1,8 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-01-29
 
+root = exports ? window
+
 # The `TableModel` encapsulates the state of the multi-touch table and the
 # objects on it.
 
@@ -24,7 +26,7 @@ class App.TableModel
 	# - **object:** The JSON object to be added to the model and screen.
 	addObjectModel: (object) ->
 		if not @objectsOnScreen[object.sid]?
-			objectModel = new ObjectModel(object, @surface, 172, 90)
+			objectModel = new App.ObjectModel(object, @surface, 90, 90)
 			@models[object.sid] = objectModel
 			@objectsOnScreen[object.sid] = objectModel
 

@@ -1,6 +1,8 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-01-29
 
+root = exports ? window
+
 # The `TUIOInterpreter` receives raw JSON updates from the TUIO plugin and use
 # these to update the basic properties of the `ObjectModel`s present on the
 # table. Furthermore, it also infers higher level gestures from the cursor and
@@ -66,8 +68,8 @@ class App.TUIOInterpreter
 
 	# Registers the callback function on the TUIO plugin.
 	#
-	# Notice that we pass anonymous functions in order to properly bind @ using
-	# the fat arrow =>
+	# Notice that we pass anonymous functions in order to properly bind @ for
+	# future use using the fat arrow (=>) construct.
 	registerCallbacks: () ->
 		tuio.object_add (object) =>	@addTuioObject(object)
 		tuio.object_update (object) => @updateTuioObject(object)
@@ -104,11 +106,13 @@ class App.TUIOInterpreter
 	#
 	# - **object:** The object to be added.
 	addTuioObject: (object) ->
-		if not @table.isObjectModelOnScreen(object.sid)?
+		if not @table.getObjectModel(object.sid)?
+			@table.addObjectModel(object)
+
 			objectTimestamp = new Date().getTime()
 			@objectUpdates[object.sid] = []
-			@objectUpdates[object.sid].push(new ObjectUpdate(objectTimestamp,
-				new	Position(object.x, object.y)))
+			@objectUpdates[object.sid].push(new App.ObjectUpdate(objectTimestamp,
+				new	App.Position(object.x, object.y)))
 
 	# Updates an object.
 	#
@@ -116,12 +120,12 @@ class App.TUIOInterpreter
 	updateTuioObject: (object) ->
 		objectTimestamp = new Date().getTime()
 		modelObject = @table.getObjectModel(object.sid)
-		angle = radiansToDegrees(object.angle)
+		angle = App.radiansToDegrees(object.angle)
 
 		if modelObject?
 			# Update visuals.
 			modelObject.rotate(angle)
-			modelObject.moveToTUIOCord(object.x, object.y)
+			modelObject.moveToPosition(object.x, object.y)
 
 			# Update set of object updates.
 			objectRecentUpdates = @objectUpdates[object.sid]
