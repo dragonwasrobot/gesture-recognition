@@ -38,6 +38,13 @@ $(document).ready () ->
 		# `tuioInterpreter` and manipulates the state of objects found in the data
 		# model.
 		table = new App.TableModel(root.surface, stylesheet)
-		tuioInterpreter = new App.TUIOInterpreter(table)
-		gestureInterpreter = new App.GestureInterpreter(table, tuioInterpreter)
+		tuioSubject = new App.TUIOSubject()
+		singleTapObserver = new App.SingleTapObserver(null)
+		doubleTapObserver = new App.DoubleTapObserver(null)
+
+		tuioSubject.registerObserver(singleTapObserver)
+		singleTapObserver.registerObserver(doubleTapObserver)
+
+		# tuioInterpreter = new App.TUIOInterpreter(table)
+		# gestureInterpreter = new App.GestureInterpreter(table, tuioInterpreter)
 		2000

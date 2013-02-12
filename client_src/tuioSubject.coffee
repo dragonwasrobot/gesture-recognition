@@ -3,9 +3,8 @@
 
 root = exports ? window
 
-# `TUIOSubject` implements the `Subject` interface and notifies any observers of
-# incoming TUIO events.
-class App.TUIOSubject extends App.Subject
+# `TUIOSubject`
+class App.TUIOSubject
 
 	# ## Constructors
 

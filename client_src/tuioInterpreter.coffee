@@ -12,26 +12,6 @@ class App.TUIOInterpreter
 
 	# ### Constants
 
-	# ##### Tap Constants
-	TAP_MIN_LENGTH: 0
-	TAP_MAX_LENGTH: 0.02
-	TAP_MIN_TIME: 0
-	TAP_MAX_TIME: 100
-
-	# ##### Double Tap Constants
-	DOUBLE_TAP_MIN_LENGTH: 0
-	DOUBLE_TAP_MAX_LENGTH: 0.04
-	DOUBLE_TAP_MIN_TIME: 0
-	DOUBLE_TAP_MAX_TIME: 200
-
-	# ##### Flick Constants
-	FLICK_MIN_LENGTH: 0.025
-	FLICK_MAX_LENGTH: 0.15
-	FLICK_MIN_TIME: 100
-	FLICK_MAX_TIME: 750
-	FLICK_MIN_DEGREE: 0
-	FLICK_MAX_DEGREE: 45
-
 	# ##### Pressed + Flick Constants
 	PRESSED_MIN_LENGTH: 0
 	PRESSED_MAX_LENGTH: 0.10
@@ -60,47 +40,9 @@ class App.TUIOInterpreter
 	# - **table:** The `TableModel` object.
 	constructor: (@table) ->
 		@objectUpdates = {} # { sid, [ ObjectUpdate ] }
-		@cursorRecentTaps = [] # [ Cursor ]
-		@cursorCurrentPresses = {} # { sid : Cursor }
-		@registerCallbacks()
+		# @registerCallbacks()
 
 	# ### Methods
-
-	# Registers the callback function on the TUIO plugin.
-	#
-	# Notice that we pass anonymous functions in order to properly bind @ for
-	# future use using the fat arrow (=>) construct.
-	registerCallbacks: () ->
-		tuio.object_add (object) =>	@addTuioObject(object)
-		tuio.object_update (object) => @updateTuioObject(object)
-		tuio.object_remove (object) => @removeTuioObject(object)
-
-		tuio.cursor_add (cursor) => @addTuioCursor(cursor)
-		tuio.cursor_update (cursor) => @updateTuioCursor(cursor)
-		tuio.cursor_remove (cursor) => @removeTuioCursor(cursor)
-
-	# #### Callbacks
-
-	# The `TUIOInterpreter` allows adding callback functions for handling
-	# four gestures:
-	#
-	# - Finger: tap
-	# - Finger: double tap
-	# - Finger: hold + tap
-	# - Object: shake
-	callbackFingerTap: (gesture) -> # stub
-	callbackFingerDoubleTap: (gesture) -> # stub
-	callbackFingerFlick: (gesture) -> # stub
-	callbackFingerHoldPlusFlick: (gesture) -> # stub
-	callbackObjectShake: (gesture) -> # stub
-
-	fingerTap : (f) -> @callbackFingerTap = f
-	fingerDoubleTap : (f) -> @callbackFingerDoubleTap = f
-	fingerFlick: (f) -> @callbackFingerFlick = f
-	fingerHoldPlusFlick : (f) -> @callbackFingerHoldPlusFlick = f
-	objectShake : (f) -> @callbackObjectShake = f
-
-	# #### UI Event Listeners
 
 	# ##### Objects
 
@@ -162,20 +104,6 @@ class App.TUIOInterpreter
 		@table.removeObjectModel(object)
 
 	# ##### Cursors
-
-	# Adds a new cursor.
-	#
-	# - **cursor:** The cursor to be added.
-	addTuioCursor: (cursor) ->
-		timestampStart = new Date().getTime()
-		positionStart = new App.Position(cursor.x, cursor.y)
-		@cursorCurrentPresses[cursor.sid] =
-			new App.CursorModel(timestampStart, null, positionStart, null)
-
-	# Update a cursor.
-	#
-	# - **cursor:** The cursor to be updated.
-	updateTuioCursor: (cursor) -> # do nothing
 
 	# Removes a cursor.
 	#
@@ -394,47 +322,6 @@ class App.TUIOInterpreter
 
 	# ##### Single Tap Recognition
 
-	# Check if we can detect a single tap
-	#
-	# - **cursorObj:**
-	checkSingleTap: (cursorObj) ->
-		App.log "checkSingleTap"
-		# App.log cursorObj.timestampStart
-		# App.log cursorObj.timestampStop
-		timeDiff = App.measureTime(cursorObj.timestampStart,
-			cursorObj.timestampStop)
-		positionDiff = App.euclideanDistance(cursorObj.positionStart,
-			cursorObj.positionStop)
-		# App.log "timeDiff:" + timeDiff
-		# App.log "positionDiff:" + positionDiff
-		if @TAP_MIN_TIME <= timeDiff and timeDiff <= @TAP_MAX_TIME and
-				@TAP_MIN_LENGTH <= positionDiff and positionDiff <= @TAP_MAX_LENGTH
-			return true
-		else
-			return false
-
-	# ##### Double Tap Recognition
-
-	# Check if we can detect a double tap
-	#
-	# - **cursorObj:**
-	checkDoubleTap: (cursorObj) ->
-		App.log "checkDoubleTap"
-		for cursor in @cursorRecentTaps
-			timeDiff = App.measureTime(cursorObj.timestampStop, cursor.timestampStop)
-			posDiff = App.euclideanDistance(cursorObj.positionStop,
-				cursor.positionStop)
-			if (@DOUBLE_TAP_MIN_TIME <= timeDiff and
-			timeDiff <=	@DOUBLE_TAP_MAX_TIME and
-			@DOUBLE_TAP_MIN_LENGTH <= posDiff and
-			posDiff <= @DOUBLE_TAP_MAX_LENGTH)
-				# App.log "timeDiff:" + timeDiff
-				# App.log "positionDiff:" + posDiff
-				return true
-		return false
-
-	# ##### Pressed + Flick Recognition
-
 	# Returns the nearest neighbor cursor
 	#
 	# - **position:**
@@ -458,29 +345,6 @@ class App.TUIOInterpreter
 				return null
 
 	# ##### Flick Recognition
-
-	# Check if we can detect a flick.
-	#
-	# - **cursorObj:**
-	checkFlick: (cursorObj) ->
-		App.log "checkFlick"
-		# Calculate the angle of the flick gesture.
-		cursorVector = App.vectorFromPositions(cursorObj.positionStart,
-			cursorObj.positionStop)
-		cursorAngle = App.vectorAngle(cursorVector, @Y_UNIT_VECTOR)
-		if cursorObj.positionStop.x < cursorObj.positionStart.x
-			cursorAngle = 360 - cursorAngle # A quick trigonometry hack.
-
-		posDiff = App.euclideanDistance(cursorObj.positionStart,
-			cursorObj.positionStop)
-		timeDiff = App.measureTime(cursorObj.timestampStart,
-			cursorObj.timestampStop)
-
-		if posDiff > @FLICK_MIN_LENGTH and posDiff < @FLICK_MAX_LENGTH and
-				timeDiff > @FLICK_MIN_TIME and timeDiff < @FLICK_MAX_TIME
-			return true
-		else
-			return false
 
 	# Returns the nearest neighbor object
 	#

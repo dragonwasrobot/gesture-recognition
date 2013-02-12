@@ -1,20 +1,22 @@
 root = exports ? window
 
-# `SingleTapObserver`
-class App.SingleTapObserver
+# `FlickObserver`
+class App.FlickObserver
 
 	# ## Constants
-	TAP_MIN_LENGTH: 0
-	TAP_MAX_LENGTH: 0.02
-	TAP_MIN_TIME: 0
-	TAP_MAX_TIME: 100
+	FLICK_MIN_LENGTH: 0.025
+	FLICK_MAX_LENGTH: 0.15
+	FLICK_MIN_TIME: 100
+	FLICK_MAX_TIME: 750
+	FLICK_MIN_DEGREE: 0
+	FLICK_MAX_DEGREE: 45
 
 	# ## Constructors
 
 	# Constructs a `SingleTapObserver`
 	constructor: (@owner) ->
 		@observers = []
-		@cursorCurrentPresses = {} # { sid : CursorModel }
+		@cursorCurrentPresses[cursor.sid]
 
 	# ## Methods
 
@@ -30,15 +32,14 @@ class App.SingleTapObserver
 
 	notifyObservers: (event) ->
 		for observer in @observers
-			if observer.notify(event)
-				return true;
-		return false;
+			if observer.notify(event) then return true
+		return false
 
 	# ### Overriden observer methods
 
-	# Notifies the `SingleTapObserver` of a new `event`.
+	# Notifies the `FlickObserver` of a new `event`.
 	notify: (event) ->
-		App.log "SingleTapObserver: notify"
+		App.log "FlickObserver: notify"
 		type = event['type']
 		cursor = event['data']
 		switch type
@@ -67,26 +68,34 @@ class App.SingleTapObserver
 		cursorModel = new App.CursorModel(oldCursorModel.timestampStart,
 			timestampStop, oldCursorModel.positionStart, positionStop)
 
-		if @checkSingleTap(cursorModel)
-			App.log "Single Tap Detected!"
+		if @checkFlick(cursorModel)
+			App.log "Flick Detected!"
 
-			tapEvent = {
-				'type' : App.Constants.FINGER_SINGLE_TAP,
+			flickEvent = {
+				'type' : App.Constants.FINGER_FLICK,
 				'data' : cursorModel
 			}
-			unless @notifyObservers(tapEvent) then @owner.notify(tapEvent)
+			unless @notifyObservers(flickEvent) then @owner.notify(flickEvent)
 
-	# Check if a single tap has occured.
+	# Check if we can detect a flick.
 	#
-	# - **cursorModel:**
-	checkSingleTap: (cursorModel) ->
-		App.log "checkSingleTap"
-		timeDiff = App.measureTime(cursorModel.timestampStart,
-			cursorModel.timestampStop)
-		positionDiff = App.euclideanDistance(cursorModel.positionStart,
-			cursorModel.positionStop)
-		if @TAP_MIN_TIME <= timeDiff and timeDiff <= @TAP_MAX_TIME and
-		@TAP_MIN_LENGTH <= positionDiff and positionDiff <= @TAP_MAX_LENGTH
+	# - **cursorObj:**
+	checkFlick: (cursorObj) ->
+		# Calculate the angle of the flick gesture.
+		cursorVector = App.vectorFromPositions(cursorObj.positionStart,
+			cursorObj.positionStop)
+		yUnitVector = { x : 0, y : 1 }
+		cursorAngle = App.vectorAngle(cursorVector, yUnitVector)
+		if cursorObj.positionStop.x < cursorObj.positionStart.x
+			cursorAngle = 360 - cursorAngle # A quick trigonometry hack.
+
+		posDiff = App.euclideanDistance(cursorObj.positionStart,
+			cursorObj.positionStop)
+		timeDiff = App.measureTime(cursorObj.timestampStart,
+			cursorObj.timestampStop)
+
+		if posDiff > @FLICK_MIN_LENGTH and posDiff < @FLICK_MAX_LENGTH and
+		timeDiff > @FLICK_MIN_TIME and timeDiff < @FLICK_MAX_TIME
 			return true
 		else
 			return false

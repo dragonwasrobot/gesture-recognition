@@ -18,6 +18,10 @@ class App.Constants
 	@CURSOR_REMOVE: "cursor:remove"
 
 	@FINGER_SINGLE_TAP: "finger:single-tap"
+	@FINGER_DOUBLE_TAP: "finger:double-tap"
+	@FINGER_FLICK: "finger:flick"
+	@FINGER_HOLD_FLICK: "finger:hold-flick"
+
 
 	# ## Constructors
 
