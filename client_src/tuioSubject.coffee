@@ -23,42 +23,42 @@ class App.TUIOSubject extends App.Subject
 		tuio.object_add (object) =>
 			objectAddEvent = {
 				'type' : App.Constants.OBJECT_ADD,
-				'event' : object
+				'data' : object
 			}
 			@notifyObservers(objectAddEvent)
 
 		tuio.object_update (object) =>
 			objectUpdateEvent = {
 				'type' : App.Constants.OBJECT_UPDATE,
-				'event' : object
+				'data' : object
 			}
 			@notifyObservers(objectUpdateEvent)
 
 		tuio.object_remove (object) =>
 			objectRemoveEvent = {
 				'type' : App.Constants.OBJECT_REMOVE,
-				'event' : object
+				'data' : object
 			}
 			@notifyObservers(objectRemoveEvent)
 
 		tuio.cursor_add (cursor) =>
 			cursorAddEvent = {
 				'type' : App.Constants.CURSOR_ADD,
-				'event' : cursor
+				'data' : cursor
 			}
 			@notifyObservers(cursorAddEvent)
 
 		tuio.cursor_update (cursor) =>
 			cursorUpdateEvent = {
 				'type' : App.Constants.CURSOR_UPDATE,
-				'event' : cursor
+				'data' : cursor
 			}
 			@notifyObservers(cursorUpdateEvent)
 
 		tuio.cursor_remove (cursor) =>
 			cursorRemoveEvent = {
 				'type' : App.Constants.CURSOR_REMOVE,
-				'event' : cursor
+				'data' : cursor
 			}
 			@notifyObservers(cursorRemoveEvent)
 
@@ -68,8 +68,9 @@ class App.TUIOSubject extends App.Subject
 		@observers.push(observer)
 
 	unregisterObserver: (observer) ->
-		@observers.splice([@observers.indexOf(observer)], 1)
+		observerIndex = @observers.indexOf(observer)
+		if observerIndex isnt -1
+			@observers.splice(observerIndex, 1)
 
 	notifyObservers: (event) ->
-		for observer in @observers
-			observer.notify(event)
+		observer.notify(event) for observer in @observers

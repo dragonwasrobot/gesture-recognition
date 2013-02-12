@@ -17,6 +17,8 @@ class App.Constants
 	@CURSOR_UPDATE: "cursor:update"
 	@CURSOR_REMOVE: "cursor:remove"
 
+	@FINGER_SINGLE_TAP: "finger:single-tap"
+
 	# ## Constructors
 
 	constructor: () -> # So this is a hack

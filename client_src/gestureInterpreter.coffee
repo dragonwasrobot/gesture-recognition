@@ -24,7 +24,9 @@ class App.GestureInterpreter
 	registerCallbacks: () ->
 		@tuioInterpreter.fingerTap (tap) => @handleFingerTap(tap)
 		@tuioInterpreter.fingerDoubleTap (tap) => @handleFingerDoubleTap(tap)
-		@tuioInterpreter.fingerHoldPlusTap (tap) => @handleFingerHoldPlusTap(tap)
+		@tuioInterpreter.fingerFlick (flick) => @handleFingerFlick(flick)
+		@tuioInterpreter.fingerHoldPlusFlick (flick) =>
+			@handleFingerHoldPlusFlick(flick)
 
 		@tuioInterpreter.objectShake (shake) => @handleObjectShake(shake)
 
@@ -36,8 +38,11 @@ class App.GestureInterpreter
 	handleFingerDoubleTap: (gesture) ->
 		App.log "handleFingerDoubleTap"
 
-	handleFingerHoldPlusTap: (gesture) ->
-		App.log "handleFingerHoldPlusTap"
+	handleFingerFlick: (gesture) ->
+		App.log "handleFingerFlick"
+
+	handleFingerHoldPlusFlick: (gesture) ->
+		App.log "handleFingerHoldPlusFlick"
 
 	# #### Object Gestures
 

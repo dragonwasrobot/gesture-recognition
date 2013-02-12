@@ -90,12 +90,14 @@ class App.TUIOInterpreter
 	# - Object: shake
 	callbackFingerTap: (gesture) -> # stub
 	callbackFingerDoubleTap: (gesture) -> # stub
-	callbackFingerHoldPlusTap: (gesture) -> # stub
+	callbackFingerFlick: (gesture) -> # stub
+	callbackFingerHoldPlusFlick: (gesture) -> # stub
 	callbackObjectShake: (gesture) -> # stub
 
 	fingerTap : (f) -> @callbackFingerTap = f
 	fingerDoubleTap : (f) -> @callbackFingerDoubleTap = f
-	fingerHoldPlusTap : (f) -> @callbackFingerHoldPlusTap = f
+	fingerFlick: (f) -> @callbackFingerFlick = f
+	fingerHoldPlusFlick : (f) -> @callbackFingerHoldPlusFlick = f
 	objectShake : (f) -> @callbackObjectShake = f
 
 	# #### UI Event Listeners

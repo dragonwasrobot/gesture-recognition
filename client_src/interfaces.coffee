@@ -27,7 +27,7 @@ class App.Subject
 
 	# ## Methods
 
-	registerObserver: (priority, observer) -> # stub
+	registerObserver: (observer) -> # stub
 
 	unregisterObserver: (observer) -> # stub
 
