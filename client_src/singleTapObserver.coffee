@@ -38,7 +38,6 @@ class App.SingleTapObserver
 
 	# Notifies the `SingleTapObserver` of a new `event`.
 	notify: (event) ->
-		App.log "SingleTapObserver: notify"
 		type = event['type']
 		cursor = event['data']
 		switch type
@@ -48,8 +47,6 @@ class App.SingleTapObserver
 				@updateCursor(cursor)
 			when App.Constants.CURSOR_REMOVE
 				@removeCursor(cursor)
-			else
-				App.log "Unknown cursor event received: #{type}"
 
 	addCursor: (cursor) ->
 		timestampStart = new Date().getTime()
@@ -80,7 +77,6 @@ class App.SingleTapObserver
 	#
 	# - **cursorModel:**
 	checkSingleTap: (cursorModel) ->
-		App.log "checkSingleTap"
 		timeDiff = App.measureTime(cursorModel.timestampStart,
 			cursorModel.timestampStop)
 		positionDiff = App.euclideanDistance(cursorModel.positionStart,

@@ -11,7 +11,7 @@ class App.DoubleTapObserver
 
 	# ## Constructors
 
-	# Constructs a `SingleTapObserver`
+	# Constructs a `DoubleTapObserver`
 	constructor: (@owner) ->
 		@recentTaps = [] # [ CursorModel ]
 
@@ -39,14 +39,12 @@ class App.DoubleTapObserver
 				@recentTaps.push(cursorModel)
 				return false
 		else
-			App.log "Unknown cursor event received: #{type}"
 			return false
 
 	# Check if a double tap has occured.
 	#
 	# - **cursorModel:**
 	checkDoubleTap: (cursorModel) ->
-		App.log "checkDoubleTap"
 		for cursor in @recentTaps
 			timeDiff = App.measureTime(cursorModel.timestampStop, cursor.timestampStop)
 			posDiff = App.euclideanDistance(cursorModel.positionStop,

@@ -41,10 +41,15 @@ $(document).ready () ->
 		tuioSubject = new App.TUIOSubject()
 		singleTapObserver = new App.SingleTapObserver(null)
 		doubleTapObserver = new App.DoubleTapObserver(null)
+		flickObserver = new App.FlickObserver(null)
+		holdFlickObserver = new App.HoldFlickObserver(null)
 
 		tuioSubject.registerObserver(singleTapObserver)
 		singleTapObserver.registerObserver(doubleTapObserver)
 
-		# tuioInterpreter = new App.TUIOInterpreter(table)
-		# gestureInterpreter = new App.GestureInterpreter(table, tuioInterpreter)
+		tuioSubject.registerObserver(flickObserver)
+
+		tuioSubject.registerObserver(holdFlickObserver)
+		flickObserver.registerObserver(holdFlickObserver)
+
 		2000

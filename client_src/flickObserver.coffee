@@ -16,7 +16,7 @@ class App.FlickObserver
 	# Constructs a `SingleTapObserver`
 	constructor: (@owner) ->
 		@observers = []
-		@cursorCurrentPresses[cursor.sid]
+		@cursorCurrentPresses = []
 
 	# ## Methods
 
@@ -39,7 +39,6 @@ class App.FlickObserver
 
 	# Notifies the `FlickObserver` of a new `event`.
 	notify: (event) ->
-		App.log "FlickObserver: notify"
 		type = event['type']
 		cursor = event['data']
 		switch type
@@ -49,8 +48,8 @@ class App.FlickObserver
 				@updateCursor(cursor)
 			when App.Constants.CURSOR_REMOVE
 				@removeCursor(cursor)
-			else
-				App.log "Unknown cursor event received: #{type}"
+
+	# ### TUIO Event handlers
 
 	addCursor: (cursor) ->
 		timestampStart = new Date().getTime()
@@ -76,6 +75,8 @@ class App.FlickObserver
 				'data' : cursorModel
 			}
 			unless @notifyObservers(flickEvent) then @owner.notify(flickEvent)
+
+	# ### Gesture Recognition
 
 	# Check if we can detect a flick.
 	#

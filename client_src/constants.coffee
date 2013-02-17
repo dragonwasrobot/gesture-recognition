@@ -10,7 +10,7 @@ class App.Constants
 	# ## Constants
 
 	@OBJECT_ADD: "object:add"
-	@OBJECT_UPDATE: "bject:update"
+	@OBJECT_UPDATE: "object:update"
 	@OBJECT_REMOVE: "object:remove"
 
 	@CURSOR_ADD: "cursor:add"
@@ -21,7 +21,7 @@ class App.Constants
 	@FINGER_DOUBLE_TAP: "finger:double-tap"
 	@FINGER_FLICK: "finger:flick"
 	@FINGER_HOLD_FLICK: "finger:hold-flick"
-
+	@OBJECT_SHAKE: "object:shake"
 
 	# ## Constructors
 

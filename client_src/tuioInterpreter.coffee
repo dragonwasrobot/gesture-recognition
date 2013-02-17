@@ -12,26 +12,19 @@ class App.TUIOInterpreter
 
 	# ### Constants
 
-	# ##### Pressed + Flick Constants
-	PRESSED_MIN_LENGTH: 0
-	PRESSED_MAX_LENGTH: 0.10
-
-	# ##### Shake Constants
+	# #### Shake Constants
 	SHAKE_MIN_LENGTH: 0.05
 	SHAKE_MAX_LENGTH: 0.20
 	SHAKE_MIN_TIME: 250
 	SHAKE_MAX_TIME: 2000 # Probably too large
 	SHAKE_MAX_DEGREE: 60
 
-	# ##### Other Constants
+	# #### Other Constants
 	SPLICE_MAX_LENGTH: 0.025
 	OBJECT_UPDATE_FREQUENCY: 100
 	OBJECT_RELEVANCE_MAX_TIME: 2500
 	CURSOR_RELEVANCE_MAX_TIME: 1000
 	NEAREST_NEIGHBOR_MAX_LENGTH: 0.15
-
-	X_UNIT_VECTOR: { x : 1 , y : 0 }
-	Y_UNIT_VECTOR: { x : 0 , y : 1 }
 
 	# ### Constructors
 
