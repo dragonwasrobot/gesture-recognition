@@ -13,7 +13,7 @@ Array::last = () -> @[@.length-1]
 #
 # Returns the number of properties on the object minus length itself.
 # Note: not sure if this is bad style.
-Object::length = () ->
+ObjectLength = () ->
 	length = 0
 	for key, value of @
 		if key isnt length
