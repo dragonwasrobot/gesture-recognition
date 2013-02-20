@@ -105,8 +105,8 @@ class App.TUIOInterpreter
 		positionStop = new App.Position(cursor.x, cursor.y)
 		oldCursorObj = @cursorCurrentPresses[cursor.sid]
 		delete @cursorCurrentPresses[cursor.sid]
-		cursorObj = new App.CursorModel(oldCursorObj.timestampStart, timestampStop,
-			oldCursorObj.positionStart, positionStop)
+		cursorObj = new App.CursorModel(cursor.sid, oldCursorObj.timestampStart,
+			timestampStop, oldCursorObj.positionStart, positionStop)
 
 		if @checkSingleTap(cursorObj)
 			App.log "Single Tap Detected!"
@@ -311,32 +311,6 @@ class App.TUIOInterpreter
 					return true
 
 			return false
-
-	# ##### Single Tap Recognition
-
-	# Returns the nearest neighbor cursor
-	#
-	# - **position:**
-	getNearestNeighborCursor: (position) ->
-			App.log "getNearestNeighborCursor"
-			# Naive Linear Search
-			nearestNeighborCursor = null
-			nearestNeighborDist = 1
-
-			for k, cursor of @cursorCurrentPresses
-				cursorPos = cursor.positionStart
-				posDiff = App.euclideanDistance(position, cursorPos)
-
-				if posDiff < nearestNeighborDist
-					nearestNeighborDist = posDiff
-					nearestNeighborCursor = cursor
-
-			if nearestNeighborDist < @NEAREST_NEIGHBOR_MAX_LENGTH
-				return nearestNeighborCursor
-			else
-				return null
-
-	# ##### Flick Recognition
 
 	# Returns the nearest neighbor object
 	#

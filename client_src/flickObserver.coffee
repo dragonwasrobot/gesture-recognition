@@ -55,7 +55,7 @@ class App.FlickObserver
 		timestampStart = new Date().getTime()
 		positionStart = new App.Position(cursor.x, cursor.y)
 		@cursorCurrentPresses[cursor.sid] =
-			new App.CursorModel(timestampStart, null, positionStart, null)
+			new App.CursorModel(cursor.sid, timestampStart, null, positionStart, null)
 
 	updateCursor: (cursor) -> # stub
 
@@ -64,7 +64,7 @@ class App.FlickObserver
 		positionStop = new App.Position(cursor.x, cursor.y)
 		oldCursorModel = @cursorCurrentPresses[cursor.sid]
 		delete @cursorCurrentPresses[cursor.sid]
-		cursorModel = new App.CursorModel(oldCursorModel.timestampStart,
+		cursorModel = new App.CursorModel(cursor.sid, oldCursorModel.timestampStart,
 			timestampStop, oldCursorModel.positionStart, positionStop)
 
 		if @checkFlick(cursorModel)

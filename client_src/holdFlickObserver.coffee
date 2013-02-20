@@ -44,7 +44,7 @@ class App.HoldFlickObserver
 		timestampStart = new Date().getTime()
 		positionStart = new App.Position(cursor.x, cursor.y)
 		@cursorCurrentPresses[cursor.sid] =
-			new App.CursorModel(timestampStart, null, positionStart, null)
+			new App.CursorModel(cursor.sid, timestampStart, null, positionStart, null)
 
 	updateCursor: (cursor) -> # stub
 
@@ -55,12 +55,13 @@ class App.HoldFlickObserver
 
 	# Check if a hold flick has occured.
 	checkHoldFlick: (cursorModel) ->
-		nearestNeighborCursor = @getNearestNeighborCursor(cursorModel.positionStart)
+		nearestNeighborCursorModel =
+			@getNearestNeighborCursor(cursorModel.positionStart, cursorModel.sid)
 		if nearestNeighborCursor?
 			App.log "Hold Flick Detected!"
 			flickEvent = {
 				'type' : App.Constants.FINGER_HOLD_FLICK,
-				'data' : cursorModel
+				'data' : nearestNeighborCursorModel
 			}
 			@owner.notify(flickEvent)
 			return true
@@ -70,21 +71,22 @@ class App.HoldFlickObserver
 	# Returns the nearest neighbor cursor
 	#
 	# - **position:**
-	getNearestNeighborCursor: (position) ->
-		nearestNeighborCursor = null
-		nearestNeighborDist = 1
+	getNearestNeighborCursor: (position, sid) ->
+		nearestNeighborCursorModel = null
+		nearestNeighborDistance = 1
 
-		for id, cursor of @cursorCurrentPresses
-			# Have to check that the cursor isn't the same as the one from the flick
-			# event -> introduce an sid property on the CursorModel.
-			cursorPos = cursor.positionStart
-			posDiff = App.euclideanDistance(position, cursorPos)
+		# This guy is still a bit broken, doesn't seem to find the nearest neighbor
+		# cursor.
+		for cursorSID, cursorModel of @cursorCurrentPresses
+			if cursorSID is sid then continue
+			cursorPosition = cursorModel.positionStart
+			positionDelta = App.euclideanDistance(position, cursorPosition)
 
-			if posDiff < nearestNeighborDist
-				nearestNeighborDist = posDiff
-				nearestNeighborCursor = cursor
+			if positionDelta < nearestNeighborDistance
+				nearestNeighborDistance = positionDelta
+				nearestNeighborCursorModel = cursorModel
 
-		if nearestNeighborDist < @NEAREST_NEIGHBOR_MAX_LENGTH
-			return nearestNeighborCursor
+		if nearestNeighborDistance < @NEAREST_NEIGHBOR_MAX_LENGTH
+			return nearestNeighborCursorModel
 		else
 			return null

@@ -11,10 +11,11 @@ class App.CursorModel
 
 	# Constructs a `CursorModel`.
 	#
+	# - **sid:** The Session ID of the cursor.
 	# - **timestampStart:** The time when the cursor is placed on the table.
 	# - **timestampStop:** The time when the cursor is released from the table.
 	# - **positionStart:** The position of the cursor when placed on the table.
 	# - **positionStop:** The position of the cursor when released from the
 	#		table.
-	constructor: (@timestampStart, @timestampStop,
+	constructor: (@sid, @timestampStart, @timestampStop,
 		@positionStart, @positionStop) ->
