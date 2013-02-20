@@ -57,7 +57,7 @@ class App.HoldFlickObserver
 	checkHoldFlick: (cursorModel) ->
 		nearestNeighborCursorModel =
 			@getNearestNeighborCursor(cursorModel.positionStart, cursorModel.sid)
-		if nearestNeighborCursor?
+		if nearestNeighborCursorModel?
 			App.log "Hold Flick Detected!"
 			flickEvent = {
 				'type' : App.Constants.FINGER_HOLD_FLICK,
@@ -79,6 +79,7 @@ class App.HoldFlickObserver
 		# cursor.
 		for cursorSID, cursorModel of @cursorCurrentPresses
 			if cursorSID is sid then continue
+
 			cursorPosition = cursorModel.positionStart
 			positionDelta = App.euclideanDistance(position, cursorPosition)
 
