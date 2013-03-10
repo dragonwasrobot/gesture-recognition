@@ -86,16 +86,40 @@ class App.TableApplication
 	performFlick: (flick) ->
 		App.log "performFlick"
 		nearestNeighbor = @getNearestNeighborObject(flick.positionStart)
-		if nearestNeighbor?
-			@tableModel.unfoldObjectModel(nearestNeighbor) # Should only unfold if same
-			# direction as object (steal code from tuioInterpreter)
+		@_performCommonFlick(flick, nearestNeighbor)
 
+	# Performs a hold flick
+	#
+	# - **flick:**
 	performHoldFlick: (flick) ->
 		App.log "performHoldFlick"
+		cursor = flick['cursor']
+		nnQueryObject = flick['nearestNeighbor']
+		nearestNeighbor = @getNearestNeighborObject(nnQueryObject.positionStart)
+		@_performCommonFlick(cursor, nearestNeighbor)
 
+	_performCommonFlick: (flick, nearestNeighbor) ->
+		if nearestNeighbor?
+			cursorVector = App.vectorFromPositions(flick.positionStart,
+				flick.positionStop)
+			cursorAngle = App.vectorAngle(cursorVector, { x : 0, y : 1 })
 
+			if flick.positionStop.x < flick.positionStart.x
+				cursorAngle = 360 - cursorAngle # A quick trigonometry hack.
+
+			nearestNeighborAngle = App.radiansToDegrees(nearestNeighbor.angle)
+
+			if App.sameDirection(cursorAngle, nearestNeighborAngle)
+				@tableModel.unfoldObjectModel(nearestNeighbor)
+			else if App.oppositeDirection(cursorAngle, nearestNeighborAngle)
+				@tableModel.foldObjectModel(nearestNeighbor)
+
+	# Performs a shake
+	#
+	# - **shake:**
 	performShake: (shake) ->
 		App.log "performShake"
+		@tableModel.foldUnfoldObjectModel(shake)
 
 	# #### Utility Methods
 

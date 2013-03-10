@@ -67,7 +67,7 @@ class App.HoldFlickObserver
 				'type' : App.Constants.FINGER_HOLD_FLICK,
 				'data' : {
 					nearestNeighbor : nearestNeighborCursorModel,
-					flick :	cursorModel
+					cursor :	cursorModel
 				}
 			}
 			@owner.notify(flickEvent)
