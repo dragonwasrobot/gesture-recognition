@@ -44,9 +44,13 @@ class App.HoldFlickObserver
 		timestampStart = new Date().getTime()
 		positionStart = new App.Position(cursor.x, cursor.y)
 		@cursorCurrentPresses[cursor.sid] =
-			new App.CursorModel(cursor.sid, timestampStart, null, positionStart, null)
+			new App.CursorModel(cursor.sid, timestampStart, null,
+				positionStart, positionStart)
 
-	updateCursor: (cursor) -> # stub
+	updateCursor: (cursor) ->
+		positionStop = new App.Position(cursor.x, cursor.y)
+		currentCursor = @cursorCurrentPresses[cursor.sid]
+		currentCursor.positionStop = positionStop
 
 	removeCursor: (cursor) ->
 		delete @cursorCurrentPresses[cursor.sid]
@@ -61,7 +65,10 @@ class App.HoldFlickObserver
 			App.log "Hold Flick Detected!"
 			flickEvent = {
 				'type' : App.Constants.FINGER_HOLD_FLICK,
-				'data' : nearestNeighborCursorModel
+				'data' : {
+					nearestNeighbor : nearestNeighborCursorModel,
+					flick :	cursorModel
+				}
 			}
 			@owner.notify(flickEvent)
 			return true
@@ -77,7 +84,7 @@ class App.HoldFlickObserver
 
 		for cursorSID, cursorModel of @cursorCurrentPresses
 			if parseInt(cursorSID) isnt sid
-				cursorPosition = cursorModel.positionStart
+				cursorPosition = cursorModel.positionStop
 				positionDelta = App.euclideanDistance(position, cursorPosition)
 
 				if positionDelta < nearestNeighborDistance

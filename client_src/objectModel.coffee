@@ -1,7 +1,7 @@
 # **Author:** Peter Urbak<br/>
-# **Version:** 2013-02-11
+# **Version:** 2013-03-10
 
-root = window ? exports
+root = exports ? window
 
 # The `ObjectModel` encapsulates the state of an object on the multi-touch
 # table.
@@ -62,19 +62,21 @@ class App.ObjectModel
 	# Changes the color of the `ObjectModel`.
 	#
 	# - **color:** The new color of the object.
-	changeColor: (color) ->	@container.attr('fill', color)
+	changeColor: (color) ->
+		newColor = 'rgb(' + color.red + ', ' + color.green + ', ' + color.blue + ')'
+		@container.attr('fill', newColor)
 
-	# Folds the `ObjectModel`.
-	foldObject: () -> @unfolded = false
+	# Returns true if the object is unfolded, false otherwise.
+	isUnfolded: () -> @unfolded
 
-	# Unfolds the `ObjectModel`.
-	unfoldObject: () -> @unfolded = true
+	# Folds/Unfolds the `ObjectModel`.
+	setUnfolded: (unfolded) -> @unfolded = unfolded
 
-	# Selects the `ObjectModel`.
-	selectObject: () -> @selected = true
+	# Returns true if the object is selected, false otherwise.
+	isSelected: () -> @selected
 
-	# Deselects the `ObjectModel`.
-	deselectObject: () -> @selected = false
+	# Selects/Deselects the `ObjectModel`.
+	setSelected: (selected) -> @selected = selected
 
 # The `ObjectUpdate` encapsulates an update of an `ObjectModel` having a
 # timestamp of the update along with a new position.

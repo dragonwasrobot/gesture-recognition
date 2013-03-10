@@ -16,9 +16,11 @@ class App.TableModel
 	# - **stylesheet:** A JSON object containing the styling properties of the
 	#		model.
 	constructor: (@surface, @stylesheet) ->
-		@models = {} # { sid , CommonObjectModel }
+		@models = {} # { sid , ObjectModel }
 
 	# ### Methods
+
+	# #### Model Manipulation - Position
 
 	# Adds a new object on the screen.
 	#
@@ -42,3 +44,60 @@ class App.TableModel
 	removeObjectModel: (object) ->
 		@models[object.sid].remove()
 		delete @models[object.sid]
+
+	# #### Model Manipulation - Color
+
+	# Selects/Deselect an object.
+	#
+	# - **object:**
+	selectDeselectObjectModel: (object) ->
+		objectModel = @models[object.sid]
+		if objectModel.isSelected()
+			@deselectObjectModel(object)
+		else
+			@selectObjectModel(object)
+
+	# Selects an object.
+	#
+	# - **object:**
+	selectObjectModel: (object) ->
+		objectModel = @models[object.sid]
+		objectModel.setSelected true
+		objectModel.changeColor @stylesheet['objectSelectedColor']
+
+	# Deselects an object.
+	#
+	# - **object:**
+	deselectObjectModel: (object) ->
+		objectModel = @models[object.sid]
+		objectModel.setSelected false
+		if objectModel.isUnfolded()
+			objectModel.changeColor @stylesheet.objectUnfoldedColor
+		else
+			objectModel.changeColor @stylesheet.objectFoldedColor
+
+	# Fold/Unfold an object.
+	#
+	# - **object:**
+	foldUnfoldObjectModel: (object) ->
+		objectModel = @models[object.sid]
+		if objectModel.isUnfolded()
+			@foldObjectModel(object)
+		else
+			@unfoldObjectModel(object)
+
+	# Unfolds an object.
+	#
+	# - **object:**
+	unfoldObjectModel: (object) ->
+		objectModel = @models[object.sid]
+		objectModel.setUnfolded true
+		objectModel.changeColor @stylesheet.objectUnfoldedColor
+
+	# Folds/Deselect an object.
+	#
+	# - **object:**
+	foldObjectModel: (object) ->
+		objectModel = @models[object.sid]
+		objectModel.setUnfolded false
+		objectModel.changeColor @stylesheet.objectFoldedColor

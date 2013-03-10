@@ -3,6 +3,8 @@ root = exports ? window
 # `ObjectShakeObserver`
 class App.ObjectShakeObserver
 
+	# ### Constants
+
 	# #### Shake Constants
 	SHAKE_MIN_LENGTH: 0.05
 	SHAKE_MAX_LENGTH: 0.20
@@ -11,7 +13,6 @@ class App.ObjectShakeObserver
 	SHAKE_MAX_DEGREE: 30
 
 	# #### Other Constants
-	NEAREST_NEIGHBOR_MAX_LENGTH: 0.15
 	SPLICE_MAX_LENGTH: 0.025
 	OBJECT_UPDATE_FREQUENCY: 100
 	OBJECT_RELEVANCE_MAX_TIME: 2500
@@ -235,25 +236,3 @@ class App.ObjectShakeObserver
 					return true
 
 			return false
-
-	# Returns the nearest neighbor object
-	#
-	# - **position:**
-	getNearestNeighborObject: (position) ->
-			App.log "getNearestNeighborObject"
-			# Naive Linear Search
-			nearestNeighborObj = null
-			nearestNeighborDist = 1
-
-			for object in tuio.objects
-				objectPos = new App.Position(object.x, object.y)
-				posDiff = App.euclideanDistance(position, objectPos)
-
-				if posDiff < nearestNeighborDist
-					nearestNeighborDist = posDiff
-					nearestNeighborObj = object
-
-			if nearestNeighborDist < @NEAREST_NEIGHBOR_MAX_LENGTH
-				return nearestNeighborObj
-			else
-				return null

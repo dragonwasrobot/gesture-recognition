@@ -8,12 +8,16 @@ root = window ? exports
 
 class App.TableApplication
 
+	# ### Constants
+	NEAREST_NEIGHBOR_MAX_LENGTH: 0.15
+
 	# ### Constructors
 
 	# Constructs a `TableApplication`.
 	#
 	# - **tableModel:** The `TableModel` encapsulating the application state.
 	constructor: (@tableModel) ->
+		@objectsOnScreen = {} # { sid, { sid, fid, x, y, a } }
 
 	# ### Methods
 
@@ -26,12 +30,15 @@ class App.TableApplication
 			# Movement updates
 			when App.Constants.OBJECT_ADD
 				object = event['data']
+				@objectsOnScreen[object.sid] = object
 				@tableModel.addObjectModel object
 			when App.Constants.OBJECT_UPDATE
 				object = event['data']
+				@objectsOnScreen[object.sid] = object
 				@tableModel.updateObjectModel object
 			when App.Constants.OBJECT_REMOVE
 				object = event['data']
+				delete @objectsOnScreen[object.sid]
 				@tableModel.removeObjectModel object
 
 			# Gesture updates
@@ -57,17 +64,59 @@ class App.TableApplication
 
 	# #### Gesture Semantics
 
+	# Performs a single tap
+	#
+	# - **tap:**
 	performSingleTap: (tap) ->
 		App.log "performSingleTap"
+		nearestNeighbor = @getNearestNeighborObject(tap.positionStart)
+		if nearestNeighbor? then @tableModel.selectDeselectObjectModel(nearestNeighbor)
 
+	# Performs a double tap
+	#
+	# - **tap:**
 	performDoubleTap: (tap) ->
 		App.log "performDoubleTap"
+		nearestNeighbor = @getNearestNeighborObject(tap.positionStart)
+		if nearestNeighbor? then @tableModel.foldUnfoldObjectModel(nearestNeighbor)
 
+	# Performs a flick
+	#
+	# - **flick:**
 	performFlick: (flick) ->
 		App.log "performFlick"
+		nearestNeighbor = @getNearestNeighborObject(flick.positionStart)
+		if nearestNeighbor?
+			@tableModel.unfoldObjectModel(nearestNeighbor) # Should only unfold if same
+			# direction as object (steal code from tuioInterpreter)
 
 	performHoldFlick: (flick) ->
 		App.log "performHoldFlick"
 
+
 	performShake: (shake) ->
 		App.log "performShake"
+
+	# #### Utility Methods
+
+	# Returns the nearest neighbor object
+	#
+	# - **position:**
+	getNearestNeighborObject: (position) ->
+		App.log "getNearestNeighborObject"
+		# Naive Linear Search
+		nearestNeighborObj = null
+		nearestNeighborDist = 1
+
+		for sid, object of @objectsOnScreen
+			objectPos = new App.Position(object.x, object.y)
+			posDiff = App.euclideanDistance(position, objectPos)
+
+			if posDiff < nearestNeighborDist
+				nearestNeighborDist = posDiff
+				nearestNeighborObj = object
+
+		if nearestNeighborDist < @NEAREST_NEIGHBOR_MAX_LENGTH
+			return nearestNeighborObj
+		else
+			return null
