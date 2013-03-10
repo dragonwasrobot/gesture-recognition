@@ -75,17 +75,14 @@ class App.HoldFlickObserver
 		nearestNeighborCursorModel = null
 		nearestNeighborDistance = 1
 
-		# This guy is still a bit broken, doesn't seem to find the nearest neighbor
-		# cursor.
 		for cursorSID, cursorModel of @cursorCurrentPresses
-			if cursorSID is sid then continue
+			if parseInt(cursorSID) isnt sid
+				cursorPosition = cursorModel.positionStart
+				positionDelta = App.euclideanDistance(position, cursorPosition)
 
-			cursorPosition = cursorModel.positionStart
-			positionDelta = App.euclideanDistance(position, cursorPosition)
-
-			if positionDelta < nearestNeighborDistance
-				nearestNeighborDistance = positionDelta
-				nearestNeighborCursorModel = cursorModel
+				if positionDelta < nearestNeighborDistance
+					nearestNeighborDistance = positionDelta
+					nearestNeighborCursorModel = cursorModel
 
 		if nearestNeighborDistance < @NEAREST_NEIGHBOR_MAX_LENGTH
 			return nearestNeighborCursorModel
