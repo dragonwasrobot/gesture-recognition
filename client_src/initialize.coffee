@@ -60,4 +60,6 @@ $(document).ready () ->
 
 		tuioSubject.registerObserver(objectShakeObserver)
 
+		tuioSubject.registerObserver(tableApplication)
+
 		2000

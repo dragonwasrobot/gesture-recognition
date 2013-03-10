@@ -1,4 +1,4 @@
-root = exports ? window
+root = window ? exports
 
 # `DoubleTapObserver`
 class App.DoubleTapObserver

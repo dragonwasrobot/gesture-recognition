@@ -1,7 +1,7 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-03-10
 
-root = exports ? window
+root = window ? exports
 
 # The `TableApplication` receives movement and gesture events and adds semantic
 # value to these by manipulating the data model accordingly.

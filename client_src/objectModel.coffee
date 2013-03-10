@@ -1,7 +1,7 @@
 # **Author:** Peter Urbak<br/>
 # **Version:** 2013-02-11
 
-root = exports ? window
+root = window ? exports
 
 # The `ObjectModel` encapsulates the state of an object on the multi-touch
 # table.
@@ -35,7 +35,6 @@ class App.ObjectModel
 	# - **x:** The x-coordinate.
 	# - **y:** The y-coordinate.
 	moveToPosition: (x, y) ->
-
 		position = @div.position()
 		width = @div.width()
 		height = @div.height()
@@ -49,15 +48,16 @@ class App.ObjectModel
 		@div.css('left', (String) ((x * 100) - halfWidth) + "%")
 		@div.css('top', (String) ((y * 100) - halfHeight) + "%")
 
+	# Rotates the `ObjectModel`.
+	#
+	# - **angle:** The angle to be rotated.
+	rotate: (angle) ->
+		@container.transform('r' + angle)
+
 	# Removes the `ObjectModel`.
 	remove: () ->
 		@div.remove()
 		@container.remove()
-
-	# Rotates the `ObjectModel`.
-	#
-	# - **angle:** The angle to be rotated.
-	rotate: (angle) -> @container.transform('r' + angle)
 
 	# Changes the color of the `ObjectModel`.
 	#
