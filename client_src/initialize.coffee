@@ -38,16 +38,17 @@ $(document).ready () ->
 		# `tuioInterpreter` and manipulates the state of objects found in the data
 		# model.
 
-		table = new App.TableModel(root.surface, stylesheet)
+		tableModel = new App.TableModel(root.surface, stylesheet)
+		tableApplication = new App.TableApplication(tableModel)
 		tuioSubject = new App.TUIOSubject()
 
-		singleTapObserver = new App.SingleTapObserver(null)
-		doubleTapObserver = new App.DoubleTapObserver(null)
+		singleTapObserver = new App.SingleTapObserver(tableApplication)
+		doubleTapObserver = new App.DoubleTapObserver(tableApplication)
 
-		flickObserver = new App.FlickObserver(null)
-		holdFlickObserver = new App.HoldFlickObserver(null)
+		flickObserver = new App.FlickObserver(tableApplication)
+		holdFlickObserver = new App.HoldFlickObserver(tableApplication)
 
-		objectShakeObserver = new App.ObjectShakeObserver(null)
+		objectShakeObserver = new App.ObjectShakeObserver(tableApplication)
 
 		# Registration of Observers.
 		tuioSubject.registerObserver(singleTapObserver)

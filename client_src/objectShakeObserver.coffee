@@ -161,20 +161,20 @@ class App.ObjectShakeObserver
 
 			refinedDirectionObjects = []
 			for direction in directionObjects
-							diffDistance = App.euclideanDistance(
-								direction.positionStart, direction.positionStop)
-							if diffDistance >= @SHAKE_MIN_LENGTH
-								refinedDirectionObjects.push(direction)
+				diffDistance = App.euclideanDistance(
+					direction.positionStart, direction.positionStop)
+				if diffDistance >= @SHAKE_MIN_LENGTH
+					refinedDirectionObjects.push(direction)
 
-			App.log "Refined directions"
-			for direction in refinedDirectionObjects
-						App.log("direction: ( (" + 100 * direction.positionStart.x + ", " +
-							100 * direction.positionStart.y + "), (" +
-							100 *	direction.positionStop.x + ", " +
-							100 * direction.positionStop.y + "), (" +
-							direction.vector.x + ", "+ direction.vector.y + ") )")
-					App.log("length: " + App.euclideanDistance(direction.positionStart,
-						direction.positionStop))
+			# App.log "Refined directions"
+			# for direction in refinedDirectionObjects
+			#		App.log("direction: ( (" + 100 * direction.positionStart.x + ", " +
+			#			100 * direction.positionStart.y + "), (" +
+			#			100 *	direction.positionStop.x + ", " +
+			#			100 * direction.positionStop.y + "), (" +
+			#			direction.vector.x + ", "+ direction.vector.y + ") )")
+			# App.log("length: " + App.euclideanDistance(direction.positionStart,
+			#		direction.positionStop))
 
 			# 2. Splice neighbors if possible
 
@@ -199,12 +199,12 @@ class App.ObjectShakeObserver
 						splicedDirectionObjects.push(currentDirection)
 					i += 1
 
-			App.log "Spliced directions"
-			for direction in splicedDirectionObjects
-				App.log("direction: ( (" + 100 * direction.positionStart.x + ", " +
-					100 * direction.positionStart.y + "), (" + 100 *
-					direction.positionStop.x + ", " + 100 * direction.positionStop.y +
-					"), (" + direction.vector.x +	", " + direction.vector.y + ") )")
+			# App.log "Spliced directions"
+			# for direction in splicedDirectionObjects
+			#		App.log("direction: ( (" + 100 * direction.positionStart.x + ", " +
+			#			100 * direction.positionStart.y + "), (" + 100 *
+			#			direction.positionStop.x + ", " + 100 * direction.positionStop.y +
+			#			"), (" + direction.vector.x +	", " + direction.vector.y + ") )")
 
 			if splicedDirectionObjects.length > 2
 				firstDirection = splicedDirectionObjects[0]
