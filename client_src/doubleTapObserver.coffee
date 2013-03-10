@@ -19,7 +19,7 @@ class App.DoubleTapObserver
 
 	# ### Overriden observer methods
 
-	# Notifies the `DoubleTapObserver` of a new `event`.
+	# Notifies the `DoubleTapObserver` of a new event.
 	#
 	# - **event:**
 	notify: (event) ->

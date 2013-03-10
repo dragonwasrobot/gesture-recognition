@@ -37,19 +37,26 @@ $(document).ready () ->
 		# `gestureInterpreter` dispatches on gesture updates received from the
 		# `tuioInterpreter` and manipulates the state of objects found in the data
 		# model.
+
 		table = new App.TableModel(root.surface, stylesheet)
 		tuioSubject = new App.TUIOSubject()
+
 		singleTapObserver = new App.SingleTapObserver(null)
 		doubleTapObserver = new App.DoubleTapObserver(null)
+
 		flickObserver = new App.FlickObserver(null)
 		holdFlickObserver = new App.HoldFlickObserver(null)
 
+		objectShakeObserver = new App.ObjectShakeObserver(null)
+
+		# Registration of Observers.
 		tuioSubject.registerObserver(singleTapObserver)
 		singleTapObserver.registerObserver(doubleTapObserver)
 
 		tuioSubject.registerObserver(flickObserver)
-
 		tuioSubject.registerObserver(holdFlickObserver)
 		flickObserver.registerObserver(holdFlickObserver)
+
+		tuioSubject.registerObserver(objectShakeObserver)
 
 		2000

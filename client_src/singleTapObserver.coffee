@@ -31,8 +31,8 @@ class App.SingleTapObserver
 	notifyObservers: (event) ->
 		for observer in @observers
 			if observer.notify(event)
-				return true;
-		return false;
+				return true
+		return false
 
 	# ### Overriden observer methods
 
@@ -47,6 +47,8 @@ class App.SingleTapObserver
 				@updateCursor(cursor)
 			when App.Constants.CURSOR_REMOVE
 				@removeCursor(cursor)
+
+	# ### TUIO Event Handlers
 
 	addCursor: (cursor) ->
 		timestampStart = new Date().getTime()
@@ -72,6 +74,8 @@ class App.SingleTapObserver
 				'data' : cursorModel
 			}
 			unless @notifyObservers(tapEvent) then @owner.notify(tapEvent)
+
+	# ### Gesture Recognition
 
 	# Check if a single tap has occured.
 	#
