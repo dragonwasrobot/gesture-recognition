@@ -12,4 +12,7 @@ node_modules/
 # Backup files.
 *~
 
+# OS/X garbage.
+.DS_Store
+
 # end-of-gitignore
