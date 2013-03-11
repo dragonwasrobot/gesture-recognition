@@ -11,14 +11,22 @@ Gesture Recognition
 
 ## Installation
 
+TODO
 
+## Running the Application
+
+TODO
+
+## Extending the Framework
+
+TODO
 
 ## TODO
 
 - Documentation.
 	- Installation.
-	- Setup.
-	- Extending/using the framework.
+	- Running the application.
+	- Extending the framework.
 
 - Improve the framework.
 	- Improve cohesion.
