@@ -2,7 +2,9 @@ Gesture Recognition
 ===================
 
 The code in this repository was part of a small university course research project I did.
-Thus the code is very much of a prototype quality as it was only meant to prove a concept.
+Thus the code is very much of a prototype quality as it was only meant to prove a concept,
+specifically creating a framework for testing new touch and object gestures on an interactive
+table.
 
 ## General
 
