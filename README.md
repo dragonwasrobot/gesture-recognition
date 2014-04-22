@@ -1,6 +1,9 @@
 Gesture Recognition
 ===================
 
+The code in this repository was part of a small university course research project I did.
+Thus the code is very much of a prototype quality as it was only meant to prove a concept.
+
 ## General
 
 - **Author:** Peter Urbak, peter@dragonwasrobot.com
@@ -8,26 +11,3 @@ Gesture Recognition
 - **Last Modified:** 2013-03-11
 - **URL:** https://github.com/dragonwasrobot/gesture-recognition
 - **License:** MIT
-
-## Installation
-
-TODO
-
-## Running the Application
-
-TODO
-
-## Extending the Framework
-
-TODO
-
-## TODO
-
-- Documentation.
-	- Installation.
-	- Running the application.
-	- Extending the framework.
-
-- Improve the framework.
-	- Improve cohesion.
-	- Create a better example application.
